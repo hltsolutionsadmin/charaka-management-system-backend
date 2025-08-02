@@ -15,3 +15,8 @@ refresh.sh
 # Ignore IntelliJ IDEA config
 .idea/
 *.iml
+
+echo "src/main/resources/application-*.properties" >> .gitignore
+echo "src/main/resources/*firebase.json" >> .gitignore
+
+
