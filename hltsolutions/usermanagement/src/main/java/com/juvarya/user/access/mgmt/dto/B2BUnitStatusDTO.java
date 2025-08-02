@@ -1,0 +1,30 @@
+package com.juvarya.user.access.mgmt.dto;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.juvarya.commonservice.dto.Role;
+import com.juvarya.user.access.mgmt.dto.response.ProductAttributeResponse;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.util.Set;
+
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class B2BUnitStatusDTO {
+    private Long id;
+    private String businessName;
+    private Boolean enabled;
+    private Boolean approved;
+    private Set<Role> roles;
+    private Set<ProductAttributeResponse> attributes;
+    public static B2BUnitStatusDTO rolesOnly(Set<Role> roles) {
+        B2BUnitStatusDTO dto = new B2BUnitStatusDTO();
+        dto.setRoles(roles);
+        return dto;
+    }
+}
