@@ -19,4 +19,6 @@ refresh.sh
 echo "src/main/resources/application-*.properties" >> .gitignore
 echo "src/main/resources/*firebase.json" >> .gitignore
 
+src/main/resources/*.json
+src/main/resources/application-*.properties
 
