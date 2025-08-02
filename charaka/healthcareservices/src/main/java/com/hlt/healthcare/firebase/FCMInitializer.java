@@ -1,4 +1,4 @@
-package com.hlt.delivery.firebase;
+package com.hlt.healthcare.firebase;
 
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
@@ -15,7 +15,7 @@ import java.io.IOException;
 @Service
 public class FCMInitializer {
 
-	@Value("${app.firebase-configuration-file}")
+	//@Value("${app.firebase-configuration-file}")
 	private String firebaseConfigPath;
 	Logger logger = LoggerFactory.getLogger(FCMInitializer.class);
 

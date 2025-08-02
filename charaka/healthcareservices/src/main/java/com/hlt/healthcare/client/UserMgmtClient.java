@@ -1,8 +1,7 @@
-package com.hlt.delivery.client;
+package com.hlt.healthcare.client;
 
 import com.hlt.commonservice.dto.*;
 import com.hlt.commonservice.enums.ERole;
-import com.hlt.delivery.dto.AddressDTO;
 import jakarta.validation.Valid;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;

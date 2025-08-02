@@ -1,8 +1,8 @@
-package com.hlt.delivery.populator;
+package com.hlt.healthcare.populator;
 
 
 import com.hlt.commonservice.dto.NotificationDTO;
-import com.hlt.delivery.model.NotificationModel;
+import com.hlt.healthcare.model.NotificationModel;
 import com.hlt.utils.Populator;
 import org.springframework.stereotype.Component;
 

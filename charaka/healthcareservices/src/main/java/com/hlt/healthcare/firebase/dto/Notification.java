@@ -1,4 +1,4 @@
-package com.hlt.delivery.firebase.dto;
+package com.hlt.healthcare.firebase.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.auto.value.AutoValue.Builder;

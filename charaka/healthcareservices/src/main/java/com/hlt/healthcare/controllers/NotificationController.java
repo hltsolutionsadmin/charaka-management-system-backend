@@ -1,12 +1,12 @@
-package com.hlt.delivery.controllers;
+package com.hlt.healthcare.controllers;
 
 
 import com.hlt.commonservice.dto.MessageResponse;
 import com.hlt.commonservice.dto.NotificationDTO;
 import com.hlt.commonservice.user.UserDetailsImpl;
-import com.hlt.delivery.model.NotificationModel;
-import com.hlt.delivery.populator.NotificationPopulator;
-import com.hlt.delivery.service.NotificationService;
+import com.hlt.healthcare.model.NotificationModel;
+import com.hlt.healthcare.populator.NotificationPopulator;
+import com.hlt.healthcare.service.NotificationService;
 import com.hlt.utils.AbstractConverter;
 import com.hlt.utils.JTBaseEndpoint;
 import com.hlt.utils.JuavaryaConstants;

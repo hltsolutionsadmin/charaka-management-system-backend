@@ -1,4 +1,4 @@
-package com.hlt.delivery.firebase.dto;
+package com.hlt.healthcare.firebase.dto;
 
 import java.util.Map;
 

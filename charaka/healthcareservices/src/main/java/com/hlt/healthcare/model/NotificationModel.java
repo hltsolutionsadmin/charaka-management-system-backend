@@ -1,7 +1,7 @@
-package com.hlt.delivery.model;
+package com.hlt.healthcare.model;
 
 
-import com.hlt.delivery.firebase.dto.NotificationEventType;
+import com.hlt.healthcare.firebase.dto.NotificationEventType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

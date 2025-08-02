@@ -1,4 +1,4 @@
-package com.hlt.delivery.dto;
+package com.hlt.healthcare.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;

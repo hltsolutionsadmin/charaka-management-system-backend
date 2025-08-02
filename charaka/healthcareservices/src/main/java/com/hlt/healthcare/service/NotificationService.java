@@ -1,6 +1,6 @@
-package com.hlt.delivery.service;
+package com.hlt.healthcare.service;
 
-import com.hlt.delivery.model.NotificationModel;
+import com.hlt.healthcare.model.NotificationModel;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

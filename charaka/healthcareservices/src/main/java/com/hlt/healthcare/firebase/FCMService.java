@@ -1,9 +1,9 @@
-package com.hlt.delivery.firebase;
+package com.hlt.healthcare.firebase;
 
 import com.google.firebase.messaging.*;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.hlt.delivery.firebase.dto.NotificationRequest;
+import com.hlt.healthcare.firebase.dto.NotificationRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;

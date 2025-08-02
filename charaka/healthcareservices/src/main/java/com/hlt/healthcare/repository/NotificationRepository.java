@@ -1,6 +1,6 @@
-    package com.hlt.delivery.repository;
+    package com.hlt.healthcare.repository;
 
-import com.hlt.delivery.model.NotificationModel;
+import com.hlt.healthcare.model.NotificationModel;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

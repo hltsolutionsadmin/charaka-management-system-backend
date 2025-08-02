@@ -1,10 +1,11 @@
-package com.hlt.delivery.firebase.listeners;
+package com.hlt.healthcare.firebase.listeners;
 
 
 
-import com.hlt.delivery.firebase.dto.Notification;
-import com.hlt.delivery.firebase.dto.NotificationEvent;
-import com.hlt.delivery.firebase.dto.NotificationEventType;
+
+import com.hlt.healthcare.firebase.dto.Notification;
+import com.hlt.healthcare.firebase.dto.NotificationEvent;
+import com.hlt.healthcare.firebase.dto.NotificationEventType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;

@@ -1,4 +1,4 @@
-package com.hlt.delivery.client;
+package com.hlt.healthcare.client;
 
 
 import com.hlt.auth.UserServiceAdapter;

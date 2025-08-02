@@ -1,11 +1,12 @@
-package com.hlt.delivery.service.impl;
+package com.hlt.healthcare.service.impl;
 
 
 
 
-import com.hlt.delivery.model.NotificationModel;
-import com.hlt.delivery.repository.NotificationRepository;
-import com.hlt.delivery.service.NotificationService;
+
+import com.hlt.healthcare.model.NotificationModel;
+import com.hlt.healthcare.repository.NotificationRepository;
+import com.hlt.healthcare.service.NotificationService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
