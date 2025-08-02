@@ -4,10 +4,10 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Table(name = "product_attribute")
+@Table(name = "business_attribute")
 @Getter
 @Setter
-public class ProductAttributeModel {
+public class BusinessAttributeModel {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

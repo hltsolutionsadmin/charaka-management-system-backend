@@ -1,109 +1,71 @@
 package com.hlt.usermanagement.model;
 
-import com.hlt.commonservice.enums.UserVerificationStatus;
+import com.hlt.auth.EncryptedStringConverter;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDate;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 @Entity
-@Table(name = "USER", indexes = {
-        @Index(name = "idx_userid", columnList = "id", unique = true)}, uniqueConstraints = {
-        @UniqueConstraint(columnNames = "username"), @UniqueConstraint(columnNames = "email")})
+@Table(name = "B2B_USER", uniqueConstraints = {
+        @UniqueConstraint(columnNames = "username"),
+        @UniqueConstraint(columnNames = "email")
+})
 @Getter
 @Setter
-@Data
-public class UserModel {
+public class UserModel extends AuditableModel {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "FIRST_NAME")
+    @Convert(converter = EncryptedStringConverter.class)
+    @Column(name = "FULL_NAME", nullable = false)
     private String fullName;
 
     @Size(max = 20)
-    @Column(unique = true)
+    @Column(name = "USERNAME", unique = true, nullable = false)
     private String username;
 
-    @Size(max = 50)
     @Email
+    @Size(max = 50)
+    @Convert(converter = EncryptedStringConverter.class)
+    @Column(name = "EMAIL", unique = true, nullable = false)
     private String email;
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
-    private Set<RoleModel> roleModels = new HashSet<>();
-
-    @Column(name = "PROFILE_PICTURE")
-    private Long profilePicture;
-
     @NotBlank
-    @Column(name = "PRIMARY_CONTACT")
+    @Convert(converter = EncryptedStringConverter.class)
+    @Column(name = "PRIMARY_CONTACT", nullable = false)
     private String primaryContact;
 
+    @Convert(converter = EncryptedStringConverter.class)
     @Column(name = "GENDER")
     private String gender;
 
-    @Column(name = "CREATION_TIME")
-    private Date creationTime;
+    @Column(name = "PROFILE_PICTURE_ID")
+    private Long profilePictureId;
 
     @Column(name = "TYPE")
     private String type;
 
-
     @Column(name = "FCM_TOKEN")
     private String fcmToken;
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<AddressModel> addresses;
 
     @Column(name = "JUVI_ID")
     private String juviId;
 
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "USER_ROLES",
+            joinColumns = @JoinColumn(name = "USER_ID"),
+            inverseJoinColumns = @JoinColumn(name = "ROLE_ID"))
+    private Set<RoleModel> roleModels = new HashSet<>();
 
-    @Column(name = "roll_number")
-    private String rollNumber;
-
-    @Column(name = "qualification")
-    private String qualification;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "b2b_unit_id")
-    private B2BUnitModel b2bUnit;
-
-
-    @Column(name = "last_logout_date")
-    private LocalDate lastLogOutDate;
-
-    @Column(name = "recent_activity_date")
-    private LocalDate recentActivityDate;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "student_verification_status", nullable = false)
-    private UserVerificationStatus userVerificationStatus = UserVerificationStatus.NOT_VERIFIED;
-
-    @Column(name = "branch")
-    private String branch;
-
-    @Column(name = "student_start_year")
-    private Integer studentStartYear;
-
-    @Column(name = "student_end_year")
-    private Integer studentEndYear;
-
-    @Column(name = "current_year")
-    private Long currentYear;
-
-    @Column(name = "password")
-    private String password;
-
-
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<AddressModel> addresses;
 }

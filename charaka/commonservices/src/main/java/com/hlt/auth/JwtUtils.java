@@ -76,7 +76,7 @@ public class JwtUtils {
         SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
         return Jwts.builder()
                 .setSubject(systemUser)
-                .addClaims(Map.of(ROLES, Set.of(ERole.ROLE_SYSTEM_USER)))
+                .addClaims(Map.of(ROLES, Set.of(ERole.ROLE_SUPER_ADMIN)))
                 .setIssuedAt(new Date())
                 .setExpiration(new Date((new Date()).getTime() + systemUserJWTExpirationMs))
                 .signWith(SignatureAlgorithm.HS512, key)

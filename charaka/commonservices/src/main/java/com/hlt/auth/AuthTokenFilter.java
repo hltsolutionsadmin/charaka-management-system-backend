@@ -40,7 +40,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 
                 LoggedInUser loggedInUser = jwtUtils.getUserFromToken(jwt);
                 UserDTO user = userServiceAdapter.getUserById(loggedInUser.getId());
-                if ((null != loggedInUser.getRoles() && loggedInUser.getRoles().contains(ERole.ROLE_SYSTEM_USER.name())) ||
+                if ((null != loggedInUser.getRoles() && loggedInUser.getRoles().contains(ERole.ROLE_SUPER_ADMIN.name())) ||
                         (user != null && jwtUtils.isTokenVersionValid(jwt, user.getVersion()))) {
                     List<GrantedAuthority> authorities = loggedInUser.getRoles().stream()
                             .map(SimpleGrantedAuthority::new)

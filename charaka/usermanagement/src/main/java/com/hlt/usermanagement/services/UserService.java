@@ -53,8 +53,5 @@ public interface UserService {
 
     long getUserCountByBusinessId(Long businessId);
 
-    void verifyStudent(Long userId, UserVerificationStatus status);
-
-
     Optional<UserModel> findByUsername(@NotBlank String username);
 }

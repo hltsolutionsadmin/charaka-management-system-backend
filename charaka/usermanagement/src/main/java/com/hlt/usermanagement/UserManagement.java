@@ -10,7 +10,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableFeignClients
 @EnableScheduling
 @ComponentScan(basePackages = {"com.hlt.usermanagement","com.hlt.auth"})
-public class 	UserManagement {
+public class UserManagement {
 
 	public static void main(String[] args) {
 		SpringApplication.run(UserManagement.class, args);

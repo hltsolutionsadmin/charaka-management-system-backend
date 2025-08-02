@@ -50,7 +50,7 @@ public class WebSecurityConfig {
                         }).permitAll()
                         // Public endpoints
                         .requestMatchers(
-                                "/api/usermgmt/auth/**",
+                                "/api/usermanagement/auth/**",
                                 "/auth/**",
                                 "/jtprofile/admin/**",
                                 "/api/public/**",

@@ -148,20 +148,6 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
     }
 
     @Override
-    @Transactional
-    public void verifyStudent(Long userId, UserVerificationStatus status) {
-        UserModel user = getUserByIdOrThrow(userId);
-        user.setUserVerificationStatus(status);
-
-        if (status == UserVerificationStatus.VERIFIED) {
-            RoleModel studentRole = getRoleByEnum(ERole.ROLE_STUDENT);
-            user.getRoleModels().add(studentRole);
-        }
-
-        saveUser(user);
-    }
-
-    @Override
     public UserModel findById(Long userId) {
         return userRepository.findById(userId).orElse(null);
     }

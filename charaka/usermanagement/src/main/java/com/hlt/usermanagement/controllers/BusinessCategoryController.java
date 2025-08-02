@@ -25,7 +25,7 @@ public class BusinessCategoryController {
     private final BusinessCategoryService businessCategoryService;
 
     @PostMapping("/add")
-    @PreAuthorize(JuavaryaConstants.ROLE_USER_ADMIN)
+    @PreAuthorize(JuavaryaConstants.ROLE_SUPER_ADMIN)
     public ResponseEntity<?> addCategory(@Valid @RequestBody BusinessCategoryRequest request) {
         BusinessCategoryModel createdCategory = businessCategoryService.createCategory(request);
         return ResponseEntity

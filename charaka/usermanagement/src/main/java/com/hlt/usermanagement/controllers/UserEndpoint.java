@@ -262,18 +262,6 @@ public class UserEndpoint extends JTBaseEndpoint {
     }
 
 
-
-    @PreAuthorize("hasAnyRole('ROLE_USER_ADMIN', 'ROLE_SYSTEM_USER')")
-    @PutMapping("/verify-student/{userId}")
-    public ResponseEntity<StandardResponse<Void>> verifyStudent(
-            @PathVariable Long userId,
-            @RequestParam UserVerificationStatus status) {
-
-        userService.verifyStudent(userId, status);
-        return ResponseEntity.ok(new StandardResponse<>("Verification status updated", "success", null));
-    }
-
-
     @PutMapping("/{id}")
     public ResponseEntity updateUser(@PathVariable("id") @Valid @NotBlank Long id, @Valid @RequestBody UserUpdateDTO details) {
         log.info("Entering into Update Basic UserModel Details API");
