@@ -1,186 +1,107 @@
+Here’s a tailored `README.md` for your current setup:
 
 ---
 
-# 🛒 Juvarya B2B – Full Backend Project Overview 
+# 🏥 Charaka Hospital Management System
+
+A secure, multi-tenant hospital management system with full audit tracking and encrypted data storage. Built with Java Spring Boot using microservices architecture.
+
+## 📦 Microservices Currently Implemented
+
+### 1. **User Management Service**
+
+Handles:
+
+* Authentication (JWT-based)
+* Role-based authorization
+* Onboarding:
+
+  * Super Admins
+  * Hospital Admins (1 per hospital)
+  * Telecallers (up to 2 hospitals max)
+  * Receptionists
+  * Doctors
+* Telecaller-to-Hospital assignments with active/inactive status
+* Admin-level user management and permissions
+
+### 2. **Healthcare Service**
+
+Handles:
+
+* Encrypted patient data storage (name, phone, etc.)
+* Patient enquiry creation and updates
+* Appointment creation and mapping to hospital + doctor
+* Hospital-specific patient and doctor access
+* Auditing for all updates (`@CreatedBy`, `@LastModifiedBy`)
 
 ---
 
-## 🎯 **What Is Juvarya B2B?**
+## 🔒 Security
 
-Juvarya B2B is a backend system similar to **Swiggy or Zomato**, built for restaurant ordering and product management. It supports order placement, real-time tracking, notifications, search, reporting, and payment flow — optimized for B2B operations like restaurants or kitchen outlets.
-
----
-
-## 🧱 **Tech Stack**
-
-* **Java 17 + Spring Boot** – Core backend services
-* **Kafka** – Real-time message communication
-* **MySQL / PostgreSQL** – Primary database
-* **Docker & Docker Compose** – Local environment
-* **Swagger** – API documentation
-* **ELK Stack (Elasticsearch, Logstash, Kibana)** – Logging and monitoring
-* **Razorpay** – Payment integration
-* **Apache POI** – Excel report generation
+* Uses JWT token for authentication.
+* Role-based authorization using Spring Security.
+* Patient data encrypted in DB using JPA `@AttributeConverter`.
 
 ---
 
-## 🧩 **Modules Explained**
+## 🧠 Roles and Permissions
 
-### 1. 👤 **User Management**
-
-* Users register and log in using mobile number + OTP
-* OTP is triggered and verified through custom endpoints
-* Once logged in, users can place orders, view history, and make payments
-
----
-
-### 2. 🧾 **Order Management**
-
-* Users can:
-
-    * Create new orders
-    * Add multiple items per order
-    * View past orders
-    * Cancel or reorder previous ones
-* Each order stores:
-
-    * Table info (if dine-in)
-    * Order time, status, total amount
-* Order statuses: `PENDING`, `IN_PROGRESS`, `DELIVERED`, `CANCELLED`, etc.
-* Notifications are triggered to restaurants and users
-
-> **Example**: User places an order → Order saved → Restaurant receives KOT (Kitchen Order Ticket) → Restaurant updates status → User gets real-time updates
+| Role           | Capabilities                                                                 |
+| -------------- | ---------------------------------------------------------------------------- |
+| Super Admin    | Onboard hospitals, assign Hospital Admins                                    |
+| Hospital Admin | Manage users in a specific hospital, assign telecallers, enable/disable them |
+| Telecaller     | Manage patient data for up to 2 hospitals                                    |
+| Doctor         | View and update clinical information for assigned appointments               |
+| Receptionist   | Manage front-desk and schedule appointments                                  |
 
 ---
 
-### 3. 🍔 **Product Management**
 
-* Admin or restaurant adds products (veg, non-veg)
-* Products can be searched with:
+## 🛠️ Tech Stack
 
-    * Restaurant ID
-    * Food type (`veg`, `non-veg`, `all`)
-    * Keyword
-* Each product includes:
-
-    * Name, price, availability
-    * Category (e.g., starters, desserts)
+* Java 17
+* Spring Boot 3.x
+* Spring Data JPA
+* Spring Security
+* MySQL
+* Lombok
+* Feign Client for inter-service communication
 
 ---
 
-### 4. 💳 **Payment Integration**
+## 🔄 Workflows
 
-Handled via **Razorpay**.
+### 🔹 Hospital Onboarding
 
-#### Key Features:
+1. Super Admin creates a new hospital.
+2. Assigns a Hospital Admin.
+3. Hospital Admin can assign telecallers and set status.
 
-* User makes payment via UPI, card, or Razorpay checkout
-* On successful payment:
+### 🔹 Patient Management
 
-    * Order is marked as paid
-    * Kafka notification is triggered to user
-    * Notification includes payment amount, time, and order ID
-* On payment failure:
-
-    * Order stays in `PENDING` or `FAILED` state
-    * Retry or cancel options allowed
-* If a restaurant **cancels** an already paid order:
-
-    * Refund is initiated using Razorpay Refund API
-    * User receives refund status update
-
-> Notifications use templates like:
-> “💰 Payment Received: Your payment of ₹149.00 was successful.”
+1. Telecaller adds patient enquiry (encrypted).
+2. Appointment created and assigned to a doctor.
+3. Doctor updates appointment info post-consultation.
 
 ---
 
-### 5. 📢 **Real-Time Notifications via Kafka**
+## 📝 How to Run
 
-Kafka topics used:
+1. Set up MySQL DB and configure `application.yml` in each service.
+2. Build and run each service independently:
 
-* `order.created` – Notifies restaurant
-* `order.status.updated` – Notifies user
-* `payment.success` – Notifies user
-* `order.cancelled` – Notifies both sides
-
-Each consumer listens and pushes messages to respective users or systems.
-
----
-
-### 6. 📈 **Excel/PDF Reporting**
-
-* Download sales reports by date range, restaurant, or frequency
-* Item-wise and outlet-wise summary
-* Fields include: Item Name, Quantity Sold, Tax, Discounts, Total Revenue
-* Apache POI is used to generate `.xlsx` files
-
-> Example: Manager downloads **June 2025 item-wise report** with top 10 items sold and total sales amount.
-
----
-
-### 7. 📊 **Logging & Monitoring (ELK Stack)**
-
-To track all events and logs in real-time:
-
-* **Logstash** collects Spring Boot logs
-* **Elasticsearch** indexes logs for search
-* **Kibana** lets you search logs like:
-
-    * “All failed payments today”
-    * “Top restaurants with delayed orders”
-    * “Orders with status not updated after 1hr”
-
-Access:
-
-* Elasticsearch: `http://localhost:9200`
-* Kibana: `http://localhost:5601`
-* View structured logs and dashboards
-
----
-
-### 8. 📡 Swagger UI (API Testing)
-
-Every backend module includes a Swagger UI:
-
-* Try APIs like `POST /api/orders/create`
-* Trigger OTP login flow
-* Test Razorpay payment creation
-* View product search filters
-
-Run locally at:
-
-```
-http://localhost:{port}/swagger-ui.html
+```bash
+./mvnw clean spring-boot:run
 ```
 
----
-
-## 🧾 Example Flow (Swiggy-like User Journey)
-
-1. User logs in using OTP
-2. Opens product catalog (veg, non-veg filtering)
-3. Adds items to order and places it
-4. Chooses to **pay online** → Redirects to Razorpay
-5. On success, system:
-
-    * Marks order paid
-    * Sends confirmation message
-    * Pushes order to restaurant
-6. Restaurant receives and accepts order
-7. User tracks order until delivery
-8. All actions logged in ELK; summary available in reports
+3. Use Postman or frontend app to interact with services.
 
 ---
 
-## ✅ Summary
-
-Juvarya B2B is a **complete backend system** for restaurant and food order operations, offering:
-
-* Clean and fast **order flow**
-* Razorpay-based **payment handling with refunds**
-* Real-time **status tracking and notifications**
-* Restaurant and product-level control
-* Powerful **report generation**
-* Full observability using the **ELK stack**
+## 📌 Notes
 
 
+* Database encryption is handled via `@AttributeConverter`.
+* Auditing enabled via Spring Data JPA.
+
+---
