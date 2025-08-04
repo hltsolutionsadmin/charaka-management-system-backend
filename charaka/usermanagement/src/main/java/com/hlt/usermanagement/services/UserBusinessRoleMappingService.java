@@ -1,13 +1,12 @@
 package com.hlt.usermanagement.services;
 
 import com.hlt.usermanagement.dto.UserBusinessRoleMappingDTO;
-import java.util.List;
+import com.hlt.usermanagement.dto.UserDTO;
 
 public interface UserBusinessRoleMappingService {
 
-    UserBusinessRoleMappingDTO assignUserToBusiness(Long userId, Long b2bUnitId, String role);
-
-    List<UserBusinessRoleMappingDTO> getUserRoles(Long userId);
-
     void deactivateMapping(Long mappingId);
+
+    UserBusinessRoleMappingDTO assignUserToBusinessWithUserDetails(UserDTO userDTO, Long b2bUnitId, String role);
+
 }

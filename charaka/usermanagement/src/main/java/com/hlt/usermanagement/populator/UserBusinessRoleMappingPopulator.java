@@ -12,6 +12,6 @@ public class UserBusinessRoleMappingPopulator {
         target.setUserId(source.getUser().getId());
         target.setB2bUnitId(source.getB2bUnit().getId());
         target.setRole(source.getRole());
-        target.setIsActive(source.isActive());
+        target.setActive(source.isActive());
     }
 }

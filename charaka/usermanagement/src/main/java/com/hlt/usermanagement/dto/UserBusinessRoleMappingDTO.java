@@ -6,8 +6,8 @@ import lombok.Data;
 @Data
 public class UserBusinessRoleMappingDTO {
     private Long id;
-    private Long userId;
     private Long b2bUnitId;
     private ERole role;
     private boolean isActive;
+    private UserDTO userDTO;
 }

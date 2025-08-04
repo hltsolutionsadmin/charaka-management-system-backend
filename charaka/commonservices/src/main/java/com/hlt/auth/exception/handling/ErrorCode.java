@@ -11,6 +11,9 @@ public enum ErrorCode {
     USER_ALREADY_EXISTS(1001, "User Already Exists", HttpStatus.CONFLICT),
     EMAIL_ALREADY_IN_USE(1002, "Email Is Already In Use", HttpStatus.CONFLICT),
     UNAUTHORIZED(1003, "Unauthorized Access", HttpStatus.UNAUTHORIZED),
+    UNSUPPORTED_MAPPING_TYPE(1021, "Unsupported mapping type for the given role", HttpStatus.BAD_REQUEST),
+
+    TELECALLER_MAPPING_LIMIT_EXCEEDED(1022, "A telecaller can only be mapped to a maximum of 2 hospitals.", HttpStatus.BAD_REQUEST),
 
 
 

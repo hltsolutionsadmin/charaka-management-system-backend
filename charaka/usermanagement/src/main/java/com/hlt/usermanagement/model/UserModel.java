@@ -59,9 +59,6 @@ public class UserModel extends AuditableModel {
     @Column(name = "PROFILE_PICTURE_ID")
     private Long profilePictureId;
 
-    @Column(name = "TYPE")
-    private String type;
-
     @Column(name = "FCM_TOKEN")
     private String fcmToken;
 

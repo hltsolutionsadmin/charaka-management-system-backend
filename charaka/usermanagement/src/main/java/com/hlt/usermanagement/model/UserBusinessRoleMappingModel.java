@@ -1,6 +1,7 @@
 package com.hlt.usermanagement.model;
 
 import com.hlt.commonservice.enums.ERole;
+import com.hlt.usermanagement.dto.enums.EMappingType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.Where;
@@ -42,6 +43,12 @@ public class UserBusinessRoleMappingModel extends AuditableModel {
     @Column(name = "role", nullable = false, length = 50)
     private ERole role;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "mapping_type", nullable = false)
+    private EMappingType mappingType;
+
     @Column(name = "is_active", nullable = false)
-    private boolean isActive = true;
+    private boolean active;
+
+
 }
