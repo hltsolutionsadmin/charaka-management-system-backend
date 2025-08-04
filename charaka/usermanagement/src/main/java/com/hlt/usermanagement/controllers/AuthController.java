@@ -26,6 +26,7 @@ import com.hlt.utils.JTBaseEndpoint;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.ResponseEntity;
@@ -115,25 +116,34 @@ public class AuthController extends JTBaseEndpoint {
     public ResponseEntity<StandardResponse<String>> registerUser(@Valid @RequestBody UsernameLoginRequest request) {
         log.info("Registering user: {}", request.getUsername());
 
+        // 1. Validate uniqueness for username, email, contact
         validateUserUniqueness(request.getUsername(), request.getPrimaryContact(), request.getEmail());
 
+        // 2. Build user with encrypted fields (handled by @Convert)
         UserModel newUser = new UserModel();
         newUser.setUsername(request.getUsername());
-        newUser.setPassword(passwordEncoder.encode(request.getPassword()));
+        newUser.setPassword(request.getPassword());
         newUser.setFullName(request.getFullName());
         newUser.setEmail(request.getEmail());
+        newUser.setEmailHash(DigestUtils.sha256Hex(request.getEmail().trim().toLowerCase()));
         newUser.setPrimaryContact(request.getPrimaryContact());
+        newUser.setPrimaryContactHash(DigestUtils.sha256Hex(request.getPrimaryContact()));
         newUser.setCreationTime(new Date());
         newUser.setRecentActivityDate(LocalDate.now());
         newUser.setLastLogOutDate(LocalDate.now());
 
-        Set<RoleModel> roles = new HashSet<>();
-        roles.add(roleService.findByErole(ERole.ROLE_USER));
-        newUser.setRoleModels(roles);
+        // 3. Assign default role
+        RoleModel userRole = roleService.findByErole(ERole.ROLE_USER);
+        newUser.setRoleModels(Set.of(userRole));
 
+        // 4. Save user (encryption handled by JPA layer)
         userService.saveUser(newUser);
+
+        // 5. Return response
         return ResponseEntity.ok(StandardResponse.message("User registered successfully"));
     }
+
+
 
     @PostMapping("/login/username")
     public ResponseEntity<Object> loginWithUsername(@Valid @RequestBody UsernameLoginRequest request) throws JsonProcessingException {

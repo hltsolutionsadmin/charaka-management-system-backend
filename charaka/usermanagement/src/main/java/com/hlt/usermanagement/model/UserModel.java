@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -41,10 +42,17 @@ public class UserModel extends AuditableModel {
     @Column(name = "EMAIL", unique = true, nullable = false)
     private String email;
 
+    @Column(name = "email_hash", unique = true)
+    private String emailHash;
+
     @NotBlank
     @Convert(converter = EncryptedStringConverter.class)
     @Column(name = "PRIMARY_CONTACT", nullable = false)
     private String primaryContact;
+
+
+    @Column(name = "primary_contact_hash")
+    private String primaryContactHash;
 
     @Convert(converter = EncryptedStringConverter.class)
     @Column(name = "GENDER")
@@ -74,7 +82,9 @@ public class UserModel extends AuditableModel {
     @Column(name = "recent_activity_date")
     private LocalDate recentActivityDate;
 
-    @Column(name = "password")
+    @Size(max = 50)
+    @Convert(converter = EncryptedStringConverter.class)
+    @Column(name = "password", unique = true, nullable = false)
     private String password;
 
     @Column(name = "last_logout_date")

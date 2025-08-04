@@ -18,9 +18,11 @@ import com.hlt.usermanagement.repository.RoleRepository;
 import com.hlt.usermanagement.repository.UserRepository;
 import com.hlt.usermanagement.services.UserService;
 import com.hlt.utils.SecurityUtils;
+import io.micrometer.common.util.StringUtils;
 import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotBlank;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.Cache;
 import org.springframework.cache.caffeine.CaffeineCacheManager;
@@ -43,13 +45,16 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
     @Autowired private MediaRepository mediaRepository;
     @Autowired private B2BUnitRepository b2bUnitRepository;
     @Autowired private PasswordEncoder passwordEncoder;
-
     @Override
     public UserModel saveUser(UserModel userModel) {
-        UserModel saved = userRepository.save(userModel);
-        updateCache(saved.getId(), saved);
-        return saved;
+        try {
+            return userRepository.save(userModel);
+        } catch (Exception ex) {
+            log.error("Failed to save user: {}", userModel, ex);
+            throw ex; // Re-throw or wrap in custom exception
+        }
     }
+
 
     @Override
     public Long onBoardUserWithCredentials(BasicOnboardUserDTO dto) {
@@ -158,12 +163,19 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
 
     @Override
     public UserModel findByEmail(String email) {
-        return userRepository.findByEmail(email).orElse(null);
+        if (StringUtils.isEmpty(email)) {
+            return null;
+        }
+
+        String emailHash = DigestUtils.sha256Hex(email.trim().toLowerCase());
+        return userRepository.findByEmailHash(emailHash).orElse(null);
     }
+
 
     @Override
     public Optional<UserModel> findByPrimaryContact(String primaryContact) {
-        return userRepository.findByPrimaryContact(primaryContact);
+        return userRepository.findByPrimaryContactHash(DigestUtils.sha256Hex(primaryContact));
+
     }
 
 

@@ -43,4 +43,7 @@ public interface UserRepository extends JpaRepository<UserModel, Long> {
     @Query("SELECT COUNT(u) FROM UserModel u WHERE u.b2bUnit.id = :businessId")
     long countUsersByBusinessId(@Param("businessId") Long businessId);
 
+    Optional<UserModel> findByPrimaryContactHash(String primaryContact);
+
+    Optional<UserModel> findByEmailHash(String emailHash);
 }
