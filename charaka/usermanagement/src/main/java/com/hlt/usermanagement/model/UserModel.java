@@ -41,10 +41,16 @@ public class UserModel extends AuditableModel {
     @Column(name = "EMAIL", unique = true, nullable = false)
     private String email;
 
+    @Column(name = "email_hash", unique = true)
+    private String emailHash;
+
     @NotBlank
     @Convert(converter = EncryptedStringConverter.class)
     @Column(name = "PRIMARY_CONTACT", nullable = false)
     private String primaryContact;
+
+    @Column(name = "primary_contact_hash")
+    private String primaryContactHash;
 
     @Convert(converter = EncryptedStringConverter.class)
     @Column(name = "GENDER")
@@ -52,9 +58,6 @@ public class UserModel extends AuditableModel {
 
     @Column(name = "PROFILE_PICTURE_ID")
     private Long profilePictureId;
-
-    @Column(name = "TYPE")
-    private String type;
 
     @Column(name = "FCM_TOKEN")
     private String fcmToken;
@@ -74,7 +77,9 @@ public class UserModel extends AuditableModel {
     @Column(name = "recent_activity_date")
     private LocalDate recentActivityDate;
 
-    @Column(name = "password")
+    @Size(max = 50)
+    @Convert(converter = EncryptedStringConverter.class)
+    @Column(name = "password", unique = true, nullable = false)
     private String password;
 
     @Column(name = "last_logout_date")

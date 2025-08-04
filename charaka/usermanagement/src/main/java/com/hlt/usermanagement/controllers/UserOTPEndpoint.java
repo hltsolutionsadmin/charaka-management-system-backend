@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 
-import com.hlt.auth.exception.handling.JuvaryaCustomerException;
+import com.hlt.auth.exception.handling.HltCustomerException;
 import com.hlt.auth.exception.handling.ErrorCode;
 import com.hlt.customerservices.CustomerIntegrationService;
 import com.hlt.customerservices.impl.CustomerIntegrationServiceImpl;
@@ -53,7 +53,7 @@ public class UserOTPEndpoint extends JTBaseEndpoint {
 
         Optional<UserModel> user = userService.findByPrimaryContact(userOtpDto.getPrimaryContact());
         if (user.isEmpty()) {
-            throw new JuvaryaCustomerException(ErrorCode.USER_NOT_FOUND);
+            throw new HltCustomerException(ErrorCode.USER_NOT_FOUND);
         }
 
         userOTPService.deleteByPrimaryContactAndOtpType(userOtpDto.getPrimaryContact(), userOtpDto.getOtpType());

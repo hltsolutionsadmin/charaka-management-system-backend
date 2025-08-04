@@ -1,7 +1,7 @@
 package com.hlt.usermanagement.controllers;
 
 import com.hlt.auth.exception.handling.ErrorCode;
-import com.hlt.auth.exception.handling.JuvaryaCustomerException;
+import com.hlt.auth.exception.handling.HltCustomerException;
 import com.hlt.commonservice.dto.StandardResponse;
 import com.hlt.commonservice.user.UserDetailsImpl;
 import com.hlt.usermanagement.dto.MediaDTO;
@@ -31,7 +31,7 @@ public class MediaController {
                 .anyMatch(auth -> auth.getAuthority().equals("ROLE_RESTAURANT_OWNER"));
 
         if (!isUserAdmin && !isRestaurantOwner) {
-            throw new JuvaryaCustomerException(ErrorCode.ACCESS_DENIED);
+            throw new HltCustomerException(ErrorCode.ACCESS_DENIED);
         }
 
         mediaService.uploadMedia(b2bUnitId, mediaDTO);

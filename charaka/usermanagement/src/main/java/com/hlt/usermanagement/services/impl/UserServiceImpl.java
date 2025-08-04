@@ -3,13 +3,12 @@ package com.hlt.usermanagement.services.impl;
 import com.hlt.usermanagement.model.*;
 import com.hlt.auth.UserServiceAdapter;
 import com.hlt.auth.exception.handling.ErrorCode;
-import com.hlt.auth.exception.handling.JuvaryaCustomerException;
+import com.hlt.auth.exception.handling.HltCustomerException;
 import com.hlt.commonservice.dto.B2BUnitDTO;
 import com.hlt.commonservice.dto.BasicOnboardUserDTO;
 import com.hlt.commonservice.dto.MediaDTO;
 import com.hlt.commonservice.dto.UserDTO;
 import com.hlt.commonservice.enums.ERole;
-import com.hlt.commonservice.enums.UserVerificationStatus;
 import com.hlt.commonservice.user.UserDetailsImpl;
 import com.hlt.usermanagement.dto.UserUpdateDTO;
 import com.hlt.usermanagement.repository.B2BUnitRepository;
@@ -18,16 +17,14 @@ import com.hlt.usermanagement.repository.RoleRepository;
 import com.hlt.usermanagement.repository.UserRepository;
 import com.hlt.usermanagement.services.UserService;
 import com.hlt.utils.SecurityUtils;
+import io.micrometer.common.util.StringUtils;
 import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotBlank;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.Cache;
 import org.springframework.cache.caffeine.CaffeineCacheManager;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -43,18 +40,21 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
     @Autowired private MediaRepository mediaRepository;
     @Autowired private B2BUnitRepository b2bUnitRepository;
     @Autowired private PasswordEncoder passwordEncoder;
-
     @Override
     public UserModel saveUser(UserModel userModel) {
-        UserModel saved = userRepository.save(userModel);
-        updateCache(saved.getId(), saved);
-        return saved;
+        try {
+            return userRepository.save(userModel);
+        } catch (Exception ex) {
+            log.error("Failed to save user: {}", userModel, ex);
+            throw ex; // Re-throw or wrap in custom exception
+        }
     }
+
 
     @Override
     public Long onBoardUserWithCredentials(BasicOnboardUserDTO dto) {
         if (userRepository.existsByUsername(dto.getUsername())) {
-            throw new JuvaryaCustomerException(ErrorCode.USER_ALREADY_EXISTS);
+            throw new HltCustomerException(ErrorCode.USER_ALREADY_EXISTS);
         }
 
         B2BUnitModel business = dto.getBusinessId() != null ? findB2BUnitById(dto.getBusinessId()) : null;
@@ -77,11 +77,11 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
         UserModel user = getUserByIdOrThrow(currentUser.getId());
 
         if (!Objects.equals(userId, user.getId())) {
-            throw new JuvaryaCustomerException(ErrorCode.USER_NOT_FOUND);
+            throw new HltCustomerException(ErrorCode.USER_NOT_FOUND);
         }
 
         if (existsByEmail(details.getEmail(), userId)) {
-            throw new JuvaryaCustomerException(ErrorCode.EMAIL_ALREADY_IN_USE);
+            throw new HltCustomerException(ErrorCode.EMAIL_ALREADY_IN_USE);
         }
 
         user.setEmail(details.getEmail());
@@ -121,11 +121,11 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
     @Override
     public void removeUserRole(String mobileNumber, ERole userRole) {
         UserModel user = findByPrimaryContact(mobileNumber)
-                .orElseThrow(() -> new JuvaryaCustomerException(ErrorCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new HltCustomerException(ErrorCode.USER_NOT_FOUND));
         RoleModel role = getRoleByEnum(userRole);
 
         if (!user.getRoleModels().remove(role)) {
-            throw new JuvaryaCustomerException(ErrorCode.ROLE_NOT_FOUND);
+            throw new HltCustomerException(ErrorCode.ROLE_NOT_FOUND);
         }
 
         saveUser(user);
@@ -158,12 +158,19 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
 
     @Override
     public UserModel findByEmail(String email) {
-        return userRepository.findByEmail(email).orElse(null);
+        if (StringUtils.isEmpty(email)) {
+            return null;
+        }
+
+        String emailHash = DigestUtils.sha256Hex(email.trim().toLowerCase());
+        return userRepository.findByEmailHash(emailHash).orElse(null);
     }
+
 
     @Override
     public Optional<UserModel> findByPrimaryContact(String primaryContact) {
-        return userRepository.findByPrimaryContact(primaryContact);
+        return userRepository.findByPrimaryContactHash(DigestUtils.sha256Hex(primaryContact));
+
     }
 
 
@@ -207,12 +214,12 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
 
     private RoleModel getRoleByEnum(ERole role) {
         return roleRepository.findByName(role)
-                .orElseThrow(() -> new JuvaryaCustomerException(ErrorCode.ROLE_NOT_FOUND));
+                .orElseThrow(() -> new HltCustomerException(ErrorCode.ROLE_NOT_FOUND));
     }
 
     private B2BUnitModel findB2BUnitById(Long id) {
         return b2bUnitRepository.findById(id)
-                .orElseThrow(() -> new JuvaryaCustomerException(ErrorCode.BUSINESS_NOT_FOUND));
+                .orElseThrow(() -> new HltCustomerException(ErrorCode.BUSINESS_NOT_FOUND));
     }
 
     private Set<RoleModel> fetchRoles(Set<ERole> roles) {
@@ -221,7 +228,7 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
 
     private UserModel getUserByIdOrThrow(Long id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new JuvaryaCustomerException(ErrorCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new HltCustomerException(ErrorCode.USER_NOT_FOUND));
     }
 
     private MediaDTO convertToMediaDto(MediaModel media) {
@@ -274,7 +281,6 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
         B2BUnitDTO dto = new B2BUnitDTO();
         dto.setId(unit.getId());
         dto.setBusinessName(unit.getBusinessName());
-        dto.setApproved(unit.isApproved());
         dto.setEnabled(unit.isEnabled());
         return dto;
     }

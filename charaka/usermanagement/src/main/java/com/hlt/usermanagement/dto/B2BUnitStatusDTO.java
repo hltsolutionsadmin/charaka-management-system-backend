@@ -19,7 +19,6 @@ public class B2BUnitStatusDTO {
     private Long id;
     private String businessName;
     private Boolean enabled;
-    private Boolean approved;
     private Set<Role> roles;
     private Set<BusinessAttributeResponse> attributes;
     public static B2BUnitStatusDTO rolesOnly(Set<Role> roles) {

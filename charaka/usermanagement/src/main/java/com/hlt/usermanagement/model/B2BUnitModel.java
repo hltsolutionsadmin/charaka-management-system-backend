@@ -33,9 +33,6 @@ public class B2BUnitModel extends AuditableModel {
     @Column(name = "contact_number", nullable = false)
     private String contactNumber;
 
-    @Column(name = "approved", nullable = false)
-    private boolean approved = false;
-
     @Column(name = "business_latitude")
     private Double businessLatitude;
 

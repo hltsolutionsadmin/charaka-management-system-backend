@@ -1,15 +1,13 @@
 package com.hlt.usermanagement.controllers;
 
 import com.hlt.auth.exception.handling.ErrorCode;
-import com.hlt.auth.exception.handling.JuvaryaCustomerException;
+import com.hlt.auth.exception.handling.HltCustomerException;
 import com.hlt.commonservice.dto.*;
 import com.hlt.commonservice.enums.ERole;
-import com.hlt.commonservice.enums.UserVerificationStatus;
 import com.hlt.commonservice.user.UserDetailsImpl;
 import com.hlt.usermanagement.azure.service.AwsBlobService;
 import com.hlt.usermanagement.dto.BasicUserDetails;
 import com.hlt.usermanagement.dto.UserUpdateDTO;
-import com.hlt.usermanagement.model.B2BUnitModel;
 import com.hlt.usermanagement.model.MediaModel;
 import com.hlt.usermanagement.model.UserModel;
 import com.hlt.usermanagement.populator.MediaPopulator;
@@ -24,11 +22,9 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
@@ -126,7 +122,7 @@ public class UserEndpoint extends JTBaseEndpoint {
 
         if (userModel == null) {
             log.error("UserModel not found with ID: {}", loggedInUser.getId());
-            throw new JuvaryaCustomerException(ErrorCode.USER_NOT_FOUND);
+            throw new HltCustomerException(ErrorCode.USER_NOT_FOUND);
         }
 
         log.info("Updating details for userModel with ID: {}", loggedInUser.getId());
@@ -140,7 +136,7 @@ public class UserEndpoint extends JTBaseEndpoint {
                         userModel.setEmail(email);
                     } else {
                         log.warn("Email '{}' is already in use", email);
-                        throw new JuvaryaCustomerException(ErrorCode.EMAIL_ALREADY_IN_USE);
+                        throw new HltCustomerException(ErrorCode.EMAIL_ALREADY_IN_USE);
                     }
                 });
 

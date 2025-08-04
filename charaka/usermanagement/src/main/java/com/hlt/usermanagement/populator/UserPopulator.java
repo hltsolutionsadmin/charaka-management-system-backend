@@ -31,7 +31,6 @@ public class UserPopulator implements Populator<UserModel, UserDTO> {
         target.setEmail(source.getEmail());
         target.setPrimaryContact(source.getPrimaryContact());
         target.setGender(source.getGender());
-        target.setType(source.getType());
 
         target.setFcmToken(source.getFcmToken());
         target.setJuviId(source.getJuviId());
@@ -57,5 +56,11 @@ public class UserPopulator implements Populator<UserModel, UserDTO> {
                             .collect(Collectors.toSet())
             );
         }
+    }
+    public UserDTO toDTO(UserModel source) {
+        if (source == null) return null;
+        UserDTO dto = new UserDTO();
+        populate(source, dto);
+        return dto;
     }
 }

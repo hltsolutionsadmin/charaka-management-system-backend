@@ -14,12 +14,7 @@ import java.util.Optional;
 
 public interface B2BUnitRepository extends JpaRepository<B2BUnitModel, Long> {
 
-    List<B2BUnitModel> findByApprovedFalseOrderByCreationDateDesc();
-
     Optional<B2BUnitModel> findByUserModelAndBusinessNameIgnoreCase(UserModel userModel, String businessName);
-
-    List<B2BUnitModel> findByApprovedTrueOrderByCreationDateDesc();
-
 
     @Query(value = """
             SELECT * FROM (
@@ -31,7 +26,7 @@ public interface B2BUnitRepository extends JpaRepository<B2BUnitModel, Long> {
                        )) AS distance
                 FROM b2b_unit bu
                 JOIN business_categories bc ON bu.category_id = bc.id
-                WHERE bu.approved = true AND bu.enabled = true
+                WHERE bu.enabled = true
                   AND (:categoryName IS NULL OR LOWER(bc.name) = LOWER(:categoryName))
             ) AS calculated
             WHERE distance <= :radiusInKm
@@ -47,7 +42,7 @@ public interface B2BUnitRepository extends JpaRepository<B2BUnitModel, Long> {
                                )) AS distance
                         FROM b2b_unit bu
                         JOIN business_categories bc ON bu.category_id = bc.id
-                        WHERE bu.approved = true AND bu.enabled = true
+                        WHERE bu.enabled = true
                           AND (:categoryName IS NULL OR LOWER(bc.name) = LOWER(:categoryName))
                     ) AS calculated
                     """,
@@ -58,7 +53,6 @@ public interface B2BUnitRepository extends JpaRepository<B2BUnitModel, Long> {
                                                               @Param("categoryName") String categoryName,
                                                               Pageable pageable);
 
-
     @Query("""
             SELECT b 
             FROM B2BUnitModel b 
@@ -67,16 +61,14 @@ public interface B2BUnitRepository extends JpaRepository<B2BUnitModel, Long> {
             """)
     Page<B2BUnitModel> findByUserAddressPostalCode(@Param("postalCode") String postalCode, Pageable pageable);
 
-
     @Query("SELECT b FROM B2BUnitModel b WHERE b.userModel.id = :userId")
     List<B2BUnitModel> findByUserModelId(@Param("userId") Long userId);
 
-    Page<B2BUnitModel> findByCategory_NameAndApprovedOrderByCreationDateDesc(String categoryName, boolean approved, Pageable pageable);
+    Page<B2BUnitModel> findByCategory_NameOrderByCreationDateDesc(String categoryName, Pageable pageable);
 
     @Query("""
        SELECT b FROM B2BUnitModel b
        WHERE b.enabled = true
-         AND b.approved = true
          AND LOWER(b.businessAddress.city) = LOWER(:city)
          AND LOWER(b.category.name) = LOWER(:categoryName)
    """)
@@ -86,9 +78,7 @@ public interface B2BUnitRepository extends JpaRepository<B2BUnitModel, Long> {
             Pageable pageable
     );
 
-
     Optional<B2BUnitModel> findByUserModel(UserModel userModel);
-
 
     @Query("SELECT b.businessAddress FROM B2BUnitModel b WHERE b.id = :unitId")
     Optional<AddressModel> findBusinessAddressByUnitId(@Param("unitId") Long unitId);

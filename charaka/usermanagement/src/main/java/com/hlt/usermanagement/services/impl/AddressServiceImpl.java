@@ -1,7 +1,7 @@
 package com.hlt.usermanagement.services.impl;
 
 import com.hlt.auth.exception.handling.ErrorCode;
-import com.hlt.auth.exception.handling.JuvaryaCustomerException;
+import com.hlt.auth.exception.handling.HltCustomerException;
 import com.hlt.commonservice.user.UserDetailsImpl;
 import com.hlt.usermanagement.dto.AddressDTO;
 import com.hlt.usermanagement.model.AddressModel;
@@ -41,17 +41,17 @@ public class AddressServiceImpl extends JTBaseEndpoint implements AddressService
         Long userId = addressDTO.getUserId() != null ? addressDTO.getUserId() : loggedInUser.getId();
         UserModel userModel = userService.findById(userId);
         if (userModel == null) {
-            throw new JuvaryaCustomerException(ErrorCode.USER_NOT_FOUND);
+            throw new HltCustomerException(ErrorCode.USER_NOT_FOUND);
         }
         if (addressDTO.getAddressLine1() == null || addressDTO.getCity() == null || addressDTO.getCountry() == null) {
-            throw new JuvaryaCustomerException(ErrorCode.INVALID_ADDRESS);
+            throw new HltCustomerException(ErrorCode.INVALID_ADDRESS);
         }
         AddressModel addressEntity;
         if (addressDTO.getId() != null) {
             addressEntity = addressRepository.findById(addressDTO.getId())
-                    .orElseThrow(() -> new JuvaryaCustomerException(ErrorCode.ADDRESS_NOT_FOUND));
+                    .orElseThrow(() -> new HltCustomerException(ErrorCode.ADDRESS_NOT_FOUND));
             if (!addressEntity.getUser().getId().equals(userId)) {
-                throw new JuvaryaCustomerException(ErrorCode.ACCESS_DENIED);
+                throw new HltCustomerException(ErrorCode.ACCESS_DENIED);
             }
         } else {
             addressEntity = new AddressModel();
@@ -83,16 +83,16 @@ public class AddressServiceImpl extends JTBaseEndpoint implements AddressService
     @Override
     public AddressDTO setDefaultAddress(Long userId, Long addressId) {
         if (addressId == null) {
-            throw new JuvaryaCustomerException(ErrorCode.INVALID_ADDRESS);
+            throw new HltCustomerException(ErrorCode.INVALID_ADDRESS);
         }
         UserModel userModel = userService.findById(userId);
         if (userModel == null) {
-            throw new JuvaryaCustomerException(ErrorCode.USER_NOT_FOUND);
+            throw new HltCustomerException(ErrorCode.USER_NOT_FOUND);
         }
         AddressModel addressToSet = addressRepository.findById(addressId)
-                .orElseThrow(() -> new JuvaryaCustomerException(ErrorCode.ADDRESS_NOT_FOUND));
+                .orElseThrow(() -> new HltCustomerException(ErrorCode.ADDRESS_NOT_FOUND));
         if (!addressToSet.getUser().getId().equals(userId)) {
-            throw new JuvaryaCustomerException(ErrorCode.ACCESS_DENIED);
+            throw new HltCustomerException(ErrorCode.ACCESS_DENIED);
         }
         AddressModel currentDefault = addressRepository.findByUserIdAndIsDefaultTrue(userId);
         if (currentDefault != null && !currentDefault.getId().equals(addressId)) {
@@ -107,14 +107,14 @@ public class AddressServiceImpl extends JTBaseEndpoint implements AddressService
     @Override
     public AddressDTO getAddressById(Long id) {
         AddressModel addressModel = addressRepository.findById(id)
-                .orElseThrow(() -> new JuvaryaCustomerException(ErrorCode.ADDRESS_NOT_FOUND));
+                .orElseThrow(() -> new HltCustomerException(ErrorCode.ADDRESS_NOT_FOUND));
         return convertToDTO(addressModel);
     }
 
     @Override
     public void deleteAddressById(Long id) {
         AddressModel addressModel = addressRepository.findById(id)
-                .orElseThrow(() -> new JuvaryaCustomerException(ErrorCode.ADDRESS_NOT_FOUND));
+                .orElseThrow(() -> new HltCustomerException(ErrorCode.ADDRESS_NOT_FOUND));
         addressRepository.delete(addressModel);
     }
 
@@ -122,11 +122,11 @@ public class AddressServiceImpl extends JTBaseEndpoint implements AddressService
     public AddressDTO getDefaultAddress(Long userId) {
         UserModel userModel = userService.findById(userId);
         if (userModel == null) {
-            throw new JuvaryaCustomerException(ErrorCode.USER_NOT_FOUND);
+            throw new HltCustomerException(ErrorCode.USER_NOT_FOUND);
         }
         AddressModel defaultAddress = addressRepository.findByUserIdAndIsDefaultTrue(userId);
         if (defaultAddress == null) {
-            throw new JuvaryaCustomerException(ErrorCode.ADDRESS_NOT_FOUND);
+            throw new HltCustomerException(ErrorCode.ADDRESS_NOT_FOUND);
         }
         return convertToDTO(defaultAddress);
     }

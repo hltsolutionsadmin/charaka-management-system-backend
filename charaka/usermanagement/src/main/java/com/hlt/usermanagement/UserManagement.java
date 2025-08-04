@@ -11,11 +11,11 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableFeignClients
 @EnableScheduling
 @EnableJpaAuditing(auditorAwareRef = "auditorAware")
-@ComponentScan(basePackages = {"com.hlt.usermanagement","com.hlt.auth"})
+@ComponentScan(basePackages = {"com.hlt.usermanagement", "com.hlt.auth"})
 public class UserManagement {
 
-	public static void main(String[] args) {
-		SpringApplication.run(UserManagement.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(UserManagement.class, args);
+    }
 
 }

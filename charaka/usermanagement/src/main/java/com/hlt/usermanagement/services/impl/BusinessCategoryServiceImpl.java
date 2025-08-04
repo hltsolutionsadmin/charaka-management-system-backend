@@ -1,6 +1,6 @@
 package com.hlt.usermanagement.services.impl;
 
-import com.hlt.auth.exception.handling.JuvaryaCustomerException;
+import com.hlt.auth.exception.handling.HltCustomerException;
 import com.hlt.auth.exception.handling.ErrorCode;
 import com.hlt.usermanagement.dto.request.BusinessCategoryRequest;
 import com.hlt.usermanagement.model.BusinessCategoryModel;
@@ -20,7 +20,7 @@ public class BusinessCategoryServiceImpl implements BusinessCategoryService {
     @Override
     public BusinessCategoryModel createCategory(BusinessCategoryRequest request) {
         if (repository.existsByName(request.getName())) {
-            throw new JuvaryaCustomerException( ErrorCode.ALREADY_EXISTS);
+            throw new HltCustomerException( ErrorCode.ALREADY_EXISTS);
         }
 
         BusinessCategoryModel category = new BusinessCategoryModel();
@@ -41,7 +41,7 @@ public class BusinessCategoryServiceImpl implements BusinessCategoryService {
     @Override
     public BusinessCategoryModel getById(Long id) {
         return repository.findById(id)
-                .orElseThrow(() -> new JuvaryaCustomerException(ErrorCode.CATEGORY_NOT_FOUND));
+                .orElseThrow(() -> new HltCustomerException(ErrorCode.CATEGORY_NOT_FOUND));
     }
 
     @Override
@@ -52,7 +52,7 @@ public class BusinessCategoryServiceImpl implements BusinessCategoryService {
     @Override
     public BusinessCategoryModel getByName(String name) {
         return repository.findByNameIgnoreCase(name)
-                .orElseThrow(() -> new JuvaryaCustomerException(ErrorCode.CATEGORY_NOT_FOUND));
+                .orElseThrow(() -> new HltCustomerException(ErrorCode.CATEGORY_NOT_FOUND));
     }
 
 

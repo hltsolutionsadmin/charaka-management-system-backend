@@ -1,7 +1,7 @@
 package com.hlt.usermanagement.services.impl;
 
 import com.hlt.auth.exception.handling.ErrorCode;
-import com.hlt.auth.exception.handling.JuvaryaCustomerException;
+import com.hlt.auth.exception.handling.HltCustomerException;
 import com.hlt.usermanagement.azure.service.AwsBlobService;
 import com.hlt.usermanagement.dto.MediaDTO;
 import com.hlt.usermanagement.model.B2BUnitModel;
@@ -40,7 +40,7 @@ public class MediaServiceImpl implements MediaService {
     @Override
     public void uploadMedia(Long b2bUnitId, MediaDTO dto) {
         B2BUnitModel b2b = b2bUnitRepository.findById(b2bUnitId)
-                .orElseThrow(() -> new JuvaryaCustomerException(ErrorCode.BUSINESS_NOT_FOUND));
+                .orElseThrow(() -> new HltCustomerException(ErrorCode.BUSINESS_NOT_FOUND));
 
         MediaModel media = new MediaModel();
         media.setB2bUnitModel(b2b);
