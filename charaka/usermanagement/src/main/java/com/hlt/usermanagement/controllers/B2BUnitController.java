@@ -205,13 +205,6 @@ public class B2BUnitController extends JTBaseEndpoint {
         return ResponseEntity.ok(addressDTO);
     }
 
-    @GetMapping("/business/{businessId}/verify-ip")
-    public ResponseEntity<StandardResponse<String>> verifyIpAddress(
-            @PathVariable Long businessId,
-            @RequestParam String ipAddress) {
-        boolean isValid = b2BUnitService.verifyIpAgainstBusiness(businessId, ipAddress);
-        return ResponseEntity.ok(new StandardResponse<>("IP address verified successfully", "Success", null));
-    }
 
 
 }

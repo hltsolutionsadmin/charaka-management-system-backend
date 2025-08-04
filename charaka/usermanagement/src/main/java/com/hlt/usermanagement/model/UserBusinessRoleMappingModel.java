@@ -14,7 +14,6 @@ import org.hibernate.annotations.Where;
  * - A user can be mapped to multiple hospitals (with 2 max check for telecaller done in service)
  */
 
-
 @Entity
 @Table(name = "user_business_role_mappings", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"user_id", "b2b_unit_id", "role"})
@@ -26,6 +25,10 @@ import org.hibernate.annotations.Where;
 @Builder
 @Where(clause = "is_active = true")
 public class UserBusinessRoleMappingModel extends AuditableModel {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)

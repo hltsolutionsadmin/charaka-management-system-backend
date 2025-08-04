@@ -1,6 +1,8 @@
+
 package com.hlt.usermanagement.controllers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+
 import com.hlt.auth.JwtUtils;
 import com.hlt.auth.exception.handling.ErrorCode;
 import com.hlt.auth.exception.handling.JuvaryaCustomerException;
@@ -160,6 +162,7 @@ public class AuthController extends JTBaseEndpoint {
             userService.saveUser(userModel);
 
             String newAccessToken = jwtUtils.generateJwtToken(loggedInUser);
+            Long businessId = userModel.getB2bUnit() != null ? userModel.getB2bUnit().getId() : null;
 
             return ResponseEntity.ok(new JwtResponse(
                     newAccessToken,
@@ -167,7 +170,8 @@ public class AuthController extends JTBaseEndpoint {
                     loggedInUser.getPrimaryContact(),
                     loggedInUser.getEmail(),
                     new ArrayList<>(loggedInUser.getRoles()),
-                    refreshToken
+                    refreshToken,
+                    businessId
             ));
         }
 

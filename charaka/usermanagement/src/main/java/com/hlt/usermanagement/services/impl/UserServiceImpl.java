@@ -142,7 +142,6 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
                 .map(this::convertToMediaDto)
                 .toList();
         dto.setMedia(mediaList);
-        dto.setUserVerificationStatus(user.getUserVerificationStatus());
 
         return dto;
     }
@@ -258,7 +257,6 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
                 .fullName(user.getFullName())
                 .primaryContact(user.getPrimaryContact())
                 .email(user.getEmail())
-                .branch(user.getBranch())
                 .creationTime(user.getCreationTime())
                 .token(user.getFcmToken())
                 .username(user.getUsername())
@@ -267,9 +265,6 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
                 .type(user.getType())
                 .roles(roles)
                 .juviId(user.getJuviId())
-                .currentYear(user.getCurrentYear())
-                .studentStartYear(user.getStudentStartYear())
-                .studentEndYear(user.getStudentEndYear())
                 .password(user.getPassword())
                 .b2bUnit(b2bUnit)
                 .build();

@@ -32,14 +32,12 @@ public class UserPopulator implements Populator<UserModel, UserDTO> {
         target.setPrimaryContact(source.getPrimaryContact());
         target.setGender(source.getGender());
         target.setType(source.getType());
-        target.setBranch(source.getBranch());
-        target.setProfilePicture(source.getProfilePicture());
+
         target.setFcmToken(source.getFcmToken());
         target.setJuviId(source.getJuviId());
         target.setLastLogOutDate(source.getLastLogOutDate());
         target.setRecentActivityDate(source.getRecentActivityDate());
-        target.setRollNumber(source.getRollNumber());
-        target.setQualification(source.getQualification());
+
 
 
         if (includeAddresses && source.getAddresses() != null && !source.getAddresses().isEmpty()) {

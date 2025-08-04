@@ -1,8 +1,7 @@
 package com.hlt.usermanagement.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.EntityListeners;
-import jakarta.persistence.MappedSuperclass;
+
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.CreatedBy;
@@ -11,27 +10,27 @@ import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.util.Date;
+import java.time.Instant;
 
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 @Getter
 @Setter
-public abstract class AuditableModel<U> {
+public abstract class AuditableModel {
 
     @CreatedBy
-    @Column(name = "CREATED_BY", updatable = false)
-    protected U createdBy;
+    @Column(name = "created_by", updatable = false)
+    private String createdBy;
 
     @CreatedDate
-    @Column(name = "CREATED_DATE", updatable = false)
-    protected Date createdDate;
+    @Column(name = "created_at", updatable = false)
+    private Instant createdAt;
 
     @LastModifiedBy
-    @Column(name = "MODIFIED_BY")
-    protected U lastModifiedBy;
+    @Column(name = "updated_by")
+    private String updatedBy;
 
     @LastModifiedDate
-    @Column(name = "MODIFIED_DATE")
-    protected Date lastModifiedDate;
+    @Column(name = "updated_at")
+    private Instant updatedAt;
 }

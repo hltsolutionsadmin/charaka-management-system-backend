@@ -124,9 +124,9 @@ public class B2BUnitServiceImpl extends JTBaseEndpoint implements B2BUnitService
     private void populateAttributes(B2BUnitModel unit, B2BUnitRequest request) {
         if (request.getAttributes() == null || request.getAttributes().isEmpty()) return;
 
-        Set<ProductAttributeModel> attributes = Optional.ofNullable(unit.getAttributes())
+        Set<BusinessAttributeModel> attributes = Optional.ofNullable(unit.getAttributes())
                 .orElseGet(() -> {
-                    Set<ProductAttributeModel> newSet = new HashSet<>();
+                    Set<BusinessAttributeModel> newSet = new HashSet<>();
                     unit.setAttributes(newSet);
                     return newSet;
                 });
@@ -134,7 +134,7 @@ public class B2BUnitServiceImpl extends JTBaseEndpoint implements B2BUnitService
         attributes.clear();
 
         for (ProductAttributeRequest attr : request.getAttributes()) {
-            ProductAttributeModel model = new ProductAttributeModel();
+            BusinessAttributeModel model = new BusinessAttributeModel();
             model.setAttributeName(attr.getAttributeName());
             model.setAttributeValue(attr.getAttributeValue());
             model.setB2bUnitModel(unit);
@@ -357,21 +357,5 @@ public class B2BUnitServiceImpl extends JTBaseEndpoint implements B2BUnitService
         return addressDTO;
     }
 
-    @Override
-    public boolean verifyIpAgainstBusiness(Long businessId, String ipAddress) {
-        B2BUnitModel business = b2bUnitRepository.findById(businessId)
-                .orElseThrow(() -> new JuvaryaCustomerException(ErrorCode.BUSINESS_NOT_FOUND));
 
-        String storedIp = business.getAttributes().stream()
-                .filter(attr -> "Ip Address".equalsIgnoreCase(attr.getAttributeName()))
-                .map(ProductAttributeModel::getAttributeValue)
-                .findFirst()
-                .orElseThrow(() -> new JuvaryaCustomerException(ErrorCode.INVALID_IP_ADDRESS));
-
-        if (!storedIp.equals(ipAddress)) {
-            throw new JuvaryaCustomerException(ErrorCode.IP_ADDRESS_MISMATCH);
-        }
-
-        return true;
-    }
 }

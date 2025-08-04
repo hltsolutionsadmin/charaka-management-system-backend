@@ -37,7 +37,6 @@ public interface B2BUnitService {
 
     AddressDTO getAddressByB2BUnitId(Long unitId);
 
-    boolean verifyIpAgainstBusiness(Long businessId, String ipAddress);
 
 
 }
