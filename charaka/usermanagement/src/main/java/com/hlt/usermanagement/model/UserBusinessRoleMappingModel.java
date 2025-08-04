@@ -24,7 +24,7 @@ import org.hibernate.annotations.Where;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Where(clause = "is_active = true")
+@Where(clause = "active = true")
 public class UserBusinessRoleMappingModel extends AuditableModel {
 
     @Id
@@ -48,7 +48,8 @@ public class UserBusinessRoleMappingModel extends AuditableModel {
     private EMappingType mappingType;
 
     @Column(name = "is_active", nullable = false)
-    private boolean active;
+    private boolean isActive;
+
 
 
 }

@@ -35,10 +35,7 @@ public interface UserRepository extends JpaRepository<UserModel, Long> {
 
     Optional<UserModel> findByPrimaryContact(String primaryContact);
 
-    Optional<UserModel> findByIdAndType(Long userId, String type);
 
-    @Query("SELECT DISTINCT users FROM UserModel users JOIN users.addresses address WHERE address.postalCode IN :code AND users.type = :type")
-    Page<UserModel> findByPostalCodesAndType(@Param("code") List<String> code, @Param("type") String type, Pageable pageable);
 
     @Query("SELECT COUNT(u) FROM UserModel u WHERE u.b2bUnit.id = :businessId")
     long countUsersByBusinessId(@Param("businessId") Long businessId);

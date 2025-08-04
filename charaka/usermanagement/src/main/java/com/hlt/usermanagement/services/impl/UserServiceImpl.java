@@ -269,7 +269,6 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
                 .username(user.getUsername())
                 .gender(user.getGender())
                 .profilePicture(profilePicture)
-                .type(user.getType())
                 .roles(roles)
                 .juviId(user.getJuviId())
                 .password(user.getPassword())
