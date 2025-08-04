@@ -2,7 +2,7 @@ package com.hlt.usermanagement.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.hlt.commonservice.dto.Role;
-import com.hlt.usermanagement.dto.response.ProductAttributeResponse;
+import com.hlt.usermanagement.dto.response.BusinessAttributeResponse;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,7 +21,7 @@ public class B2BUnitStatusDTO {
     private Boolean enabled;
     private Boolean approved;
     private Set<Role> roles;
-    private Set<ProductAttributeResponse> attributes;
+    private Set<BusinessAttributeResponse> attributes;
     public static B2BUnitStatusDTO rolesOnly(Set<Role> roles) {
         B2BUnitStatusDTO dto = new B2BUnitStatusDTO();
         dto.setRoles(roles);

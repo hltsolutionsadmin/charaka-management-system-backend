@@ -160,7 +160,6 @@ public class AuthController extends JTBaseEndpoint {
             userService.saveUser(userModel);
 
             String newAccessToken = jwtUtils.generateJwtToken(loggedInUser);
-            Long businessId = userModel.getB2bUnit() != null ? userModel.getB2bUnit().getId() : null;
 
             return ResponseEntity.ok(new JwtResponse(
                     newAccessToken,
@@ -168,8 +167,7 @@ public class AuthController extends JTBaseEndpoint {
                     loggedInUser.getPrimaryContact(),
                     loggedInUser.getEmail(),
                     new ArrayList<>(loggedInUser.getRoles()),
-                    refreshToken,
-                    businessId
+                    refreshToken
             ));
         }
 

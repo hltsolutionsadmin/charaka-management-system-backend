@@ -1,7 +1,7 @@
 package com.hlt.usermanagement.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.hlt.usermanagement.dto.response.ProductAttributeResponse;
+import com.hlt.usermanagement.dto.response.BusinessAttributeResponse;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.web.multipart.MultipartFile;
@@ -37,7 +37,7 @@ public class B2BUnitDTO {
 
 	private AddressDTO addressDTO;
 
-	private Set<ProductAttributeResponse> attributes;
+	private Set<BusinessAttributeResponse> attributes;
 
 	private List<MultipartFile> mediaFiles;
 	private List<String> mediaUrls;

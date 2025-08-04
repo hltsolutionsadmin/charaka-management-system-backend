@@ -8,6 +8,8 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDate;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -68,4 +70,20 @@ public class UserModel extends AuditableModel {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AddressModel> addresses;
+
+    @Column(name = "recent_activity_date")
+    private LocalDate recentActivityDate;
+
+    @Column(name = "password")
+    private String password;
+
+    @Column(name = "last_logout_date")
+    private LocalDate lastLogOutDate;
+
+    @Column(name = "CREATION_TIME")
+    private Date creationTime;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "b2b_unit_id")
+    private B2BUnitModel b2bUnit;
 }

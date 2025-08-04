@@ -10,7 +10,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ProductAttributeResponse {
+public class BusinessAttributeResponse {
 
     private Long id;
     private String attributeName;

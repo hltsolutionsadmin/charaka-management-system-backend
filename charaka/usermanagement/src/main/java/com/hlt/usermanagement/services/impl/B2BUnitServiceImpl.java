@@ -8,7 +8,7 @@ import com.hlt.usermanagement.dto.UserDTO;
 import com.hlt.usermanagement.dto.request.B2BUnitRequest;
 import com.hlt.usermanagement.dto.request.ProductAttributeRequest;
 import com.hlt.usermanagement.dto.response.B2BUnitListResponse;
-import com.hlt.usermanagement.dto.response.ProductAttributeResponse;
+import com.hlt.usermanagement.dto.response.BusinessAttributeResponse;
 import com.hlt.usermanagement.model.*;
 import com.hlt.usermanagement.populator.AddressPopulator;
 import com.hlt.usermanagement.populator.B2BUnitPopulator;
@@ -178,8 +178,8 @@ public class B2BUnitServiceImpl extends JTBaseEndpoint implements B2BUnitService
         }
 
         if (model.getAttributes() != null && !model.getAttributes().isEmpty()) {
-            Set<ProductAttributeResponse> attributes = model.getAttributes().stream()
-                    .map(attr -> new ProductAttributeResponse(
+            Set<BusinessAttributeResponse> attributes = model.getAttributes().stream()
+                    .map(attr -> new BusinessAttributeResponse(
                             attr.getId(),
                             attr.getAttributeName(),
                             attr.getAttributeValue()))
@@ -259,8 +259,8 @@ public class B2BUnitServiceImpl extends JTBaseEndpoint implements B2BUnitService
                 .collect(Collectors.toList());
     }
     private B2BUnitStatusDTO mapToStatusDTO(B2BUnitModel b2BUnit, Set<Role> userRoles) {
-        Set<ProductAttributeResponse> attributes = b2BUnit.getAttributes().stream()
-                .map(attr -> new ProductAttributeResponse(
+        Set<BusinessAttributeResponse> attributes = b2BUnit.getAttributes().stream()
+                .map(attr -> new BusinessAttributeResponse(
                         attr.getId(),
                         attr.getAttributeName(),
                         attr.getAttributeValue()

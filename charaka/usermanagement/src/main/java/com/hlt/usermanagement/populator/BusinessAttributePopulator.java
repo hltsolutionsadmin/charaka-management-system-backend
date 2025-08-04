@@ -1,15 +1,15 @@
 package com.hlt.usermanagement.populator;
 
-import com.hlt.usermanagement.dto.response.ProductAttributeResponse;
-import com.hlt.usermanagement.model.ProductAttributeModel;
+import com.hlt.usermanagement.dto.response.BusinessAttributeResponse;
+import com.hlt.usermanagement.model.BusinessAttributeModel;
 import com.hlt.utils.Populator;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ProductAttributePopulator implements Populator<ProductAttributeModel, ProductAttributeResponse> {
+public class BusinessAttributePopulator implements Populator<BusinessAttributeModel, BusinessAttributeResponse> {
 
     @Override
-    public void populate(ProductAttributeModel source, ProductAttributeResponse target) {
+    public void populate(BusinessAttributeModel source, BusinessAttributeResponse target) {
         if (source == null || target == null) {
             return;
         }

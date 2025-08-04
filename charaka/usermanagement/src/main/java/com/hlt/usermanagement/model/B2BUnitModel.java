@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Entity
 @Table(name = "b2b_unit")
@@ -24,8 +25,9 @@ public class B2BUnitModel extends AuditableModel {
     @Column(name = "business_name", nullable = false)
     private String businessName;
 
-    @Column(name = "business_category_id", nullable = false)
-    private Long businessCategoryId;
+    @ManyToOne
+    @JoinColumn(name = "category_id")
+    private BusinessCategoryModel category;
 
     @Column(name = "contact_number", nullable = false)
     private String contactNumber;
@@ -38,6 +40,9 @@ public class B2BUnitModel extends AuditableModel {
 
     @Column(name = "business_longitude")
     private Double businessLongitude;
+
+    @OneToMany(mappedBy = "b2bUnitModel", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<BusinessAttributeModel> attributes;
 
     @Column(name = "enabled", nullable = false)
     private boolean enabled = true;

@@ -2,7 +2,7 @@ package com.hlt.usermanagement.populator;
 
 import com.hlt.usermanagement.dto.AddressDTO;
 import com.hlt.usermanagement.dto.B2BUnitDTO;
-import com.hlt.usermanagement.dto.response.ProductAttributeResponse;
+import com.hlt.usermanagement.dto.response.BusinessAttributeResponse;
 import com.hlt.usermanagement.dto.UserDTO;
 import com.hlt.usermanagement.model.B2BUnitModel;
 import com.hlt.utils.Populator;
@@ -22,7 +22,7 @@ public class B2BUnitPopulator implements Populator<B2BUnitModel, B2BUnitDTO> {
 	private AddressPopulator addressPopulator;
 
 	@Autowired
-	private ProductAttributePopulator attributePopulator;
+	private BusinessAttributePopulator attributePopulator;
 
 	public B2BUnitDTO toDTO(B2BUnitModel source) {
 		if (source == null)
@@ -64,8 +64,8 @@ public class B2BUnitPopulator implements Populator<B2BUnitModel, B2BUnitDTO> {
 		}
 
 		if (source.getAttributes() != null && !source.getAttributes().isEmpty()) {
-			Set<ProductAttributeResponse> attributes = source.getAttributes().stream().map(attribute -> {
-				ProductAttributeResponse dto = new ProductAttributeResponse();
+			Set<BusinessAttributeResponse> attributes = source.getAttributes().stream().map(attribute -> {
+				BusinessAttributeResponse dto = new BusinessAttributeResponse();
 				attributePopulator.populate(attribute, dto);
 				return dto;
 			}).collect(Collectors.toSet());

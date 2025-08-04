@@ -78,11 +78,6 @@ public class UserOTPEndpoint extends JTBaseEndpoint {
     public ResponseEntity<?> newUserSignUp( @Valid @RequestBody UserOTPDTO userOtpDto, @RequestParam(defaultValue = "true") boolean triggerOtp) throws IOException {
 
         log.info("Entering newUserSignUp with Primary Contact: {}, OTP Type: {}", userOtpDto.getPrimaryContact(), userOtpDto.getOtpType());
-//        Optional<UserModel> user = userService.findByPrimaryContact(userOtpDto.getPrimaryContact());
-//        if (user.isPresent() && !StringUtils.isEmpty(user.get().getFullName())) {
-//            throw new JuvaryaCustomerException(ErrorCode.USER_ALREADY_EXISTS);
-//        }
-
         userOTPService.deleteByPrimaryContactAndOtpType(userOtpDto.getPrimaryContact(), userOtpDto.getOtpType());
 
         UserOTPModel userOtp = generateAndSaveOtp(userOtpDto);

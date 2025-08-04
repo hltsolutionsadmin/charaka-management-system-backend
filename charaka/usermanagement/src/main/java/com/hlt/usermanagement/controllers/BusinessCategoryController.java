@@ -34,7 +34,7 @@ public class BusinessCategoryController {
     }
 
     @DeleteMapping("/delete/{id}")
-    @PreAuthorize(JuavaryaConstants.ROLE_USER_ADMIN)
+    @PreAuthorize(JuavaryaConstants.ROLE_SUPER_ADMIN)
     public ResponseEntity<?> deleteCategory(@PathVariable Long id) {
         businessCategoryService.deleteById(id);
         return ResponseEntity

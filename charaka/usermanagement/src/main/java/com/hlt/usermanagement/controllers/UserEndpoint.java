@@ -145,25 +145,7 @@ public class UserEndpoint extends JTBaseEndpoint {
                 });
 
         Optional.ofNullable(details.getFcmToken()).ifPresent(userModel::setFcmToken);
-        Optional.ofNullable(details.getCurrentYear()).ifPresent(userModel::setCurrentYear);
-        Optional.ofNullable(details.getGender()).ifPresent(userModel::setGender);
-        Optional.ofNullable(details.getRollNumber()).ifPresent(userModel::setRollNumber);
-        Optional.ofNullable(details.getQualification()).ifPresent(userModel::setQualification);
-        Optional.ofNullable(details.getBranch()).ifPresent(userModel::setBranch);
-        Optional.ofNullable(details.getStudentStartYear()).ifPresent(userModel::setStudentStartYear);
-        Optional.ofNullable(details.getStudentEndYear()).ifPresent(userModel::setStudentEndYear);
-        Optional.ofNullable(details.getPassword())
-                .map(passwordEncoder::encode)
-                .ifPresent(userModel::setPassword);
 
-        if (details.getBusinessId() != null) {
-            B2BUnitModel unit = b2bUnitRepository.findById(details.getBusinessId())
-                    .orElseThrow(() -> {
-                        log.error("Business unit not found with ID: {}", details.getBusinessId());
-                        return new JuvaryaCustomerException(ErrorCode.BUSINESS_NOT_FOUND);
-                    });
-            userModel.setB2bUnit(unit);
-        }
 
         Long userId = loggedInUser.getId();
         List<MediaModel> mediaModels = new ArrayList<>();
@@ -183,7 +165,6 @@ public class UserEndpoint extends JTBaseEndpoint {
             profilePicMedia.setModificationTime(new Date());
 
             mediaService.saveMedia(profilePicMedia);
-            userModel.setProfilePicture(profilePicMedia.getId());
         }
 
         if (details.getMediaFiles() != null && !details.getMediaFiles().isEmpty()) {
@@ -244,14 +225,6 @@ public class UserEndpoint extends JTBaseEndpoint {
                 mediaModels.add(media);
             }
         }
-
-        // Automatically set verification status to PENDING if media was uploaded and status is NOT_VERIFIED
-        if (!mediaModels.isEmpty()
-                && (userModel.getUserVerificationStatus() == UserVerificationStatus.NOT_VERIFIED)) {
-            userModel.setUserVerificationStatus(UserVerificationStatus.PENDING);
-            log.info("User uploaded media, setting verification status to PENDING");
-        }
-
 
         userService.saveUser(userModel);
 

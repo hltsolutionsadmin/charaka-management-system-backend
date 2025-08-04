@@ -25,6 +25,6 @@ public class B2BUnitListResponse {
 
     private boolean enabled;
 
-    private Set<ProductAttributeResponse> attributes;
+    private Set<BusinessAttributeResponse> attributes;
 }
 
