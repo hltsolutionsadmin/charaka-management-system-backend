@@ -1,0 +1,30 @@
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.logs
+*.iml
+.idea/
+**/.eclipse
+.DS_Store
+refresh.sh
+**/.factorypath
+.project
+
+# Ignore IntelliJ IDEA config
+.idea/
+*.iml
+
+#echo "src/main/resources/application-*.properties" >> .gitignore
+#echo "src/main/resources/*firebase.json" >> .gitignore
+#
+#src/main/resources/*.json
+#src/main/resources/application-*.properties
+#
+#*.json
+#application.properties
+#application-dev.properties
+#application-prod.properties
+
+
