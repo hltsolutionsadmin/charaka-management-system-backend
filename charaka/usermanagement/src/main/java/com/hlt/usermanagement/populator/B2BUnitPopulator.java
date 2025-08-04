@@ -41,7 +41,6 @@ public class B2BUnitPopulator implements Populator<B2BUnitModel, B2BUnitDTO> {
 		target.setId(source.getId());
 		target.setBusinessName(source.getBusinessName());
 		target.setContactNumber(source.getContactNumber());
-		target.setApproved(source.isApproved());
 		target.setEnabled(source.isEnabled());
 		target.setBusinessLatitude(source.getBusinessLatitude());
 		target.setBusinessLongitude(source.getBusinessLongitude());

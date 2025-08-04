@@ -5,7 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 
 import com.hlt.auth.JwtUtils;
 import com.hlt.auth.exception.handling.ErrorCode;
-import com.hlt.auth.exception.handling.JuvaryaCustomerException;
+import com.hlt.auth.exception.handling.HltCustomerException;
 import com.hlt.commonservice.dto.LoggedInUser;
 import com.hlt.commonservice.dto.StandardResponse;
 import com.hlt.commonservice.enums.ERole;
@@ -87,7 +87,7 @@ public class AuthController extends JTBaseEndpoint {
 
         if (loginRequest.getBusinessId() != null) {
             B2BUnitModel unit = b2bUnitRepository.findById(loginRequest.getBusinessId())
-                    .orElseThrow(() -> new JuvaryaCustomerException(ErrorCode.BUSINESS_NOT_FOUND));
+                    .orElseThrow(() -> new HltCustomerException(ErrorCode.BUSINESS_NOT_FOUND));
             userModel.setB2bUnit(unit);
         }
 
@@ -102,13 +102,13 @@ public class AuthController extends JTBaseEndpoint {
 
     private void validateUserUniqueness(String username, String primaryContact, String email) {
         if (userService.findByUsername(username).isPresent()) {
-            throw new JuvaryaCustomerException(ErrorCode.USER_ALREADY_EXISTS);
+            throw new HltCustomerException(ErrorCode.USER_ALREADY_EXISTS);
         }
         if (userService.findByPrimaryContact(primaryContact).isPresent()) {
-            throw new JuvaryaCustomerException(ErrorCode.ALREADY_EXISTS, "Mobile number already exists");
+            throw new HltCustomerException(ErrorCode.ALREADY_EXISTS, "Mobile number already exists");
         }
         if (StringUtils.isNotEmpty(email) && userService.findByEmail(email) != null) {
-            throw new JuvaryaCustomerException(ErrorCode.EMAIL_ALREADY_IN_USE);
+            throw new HltCustomerException(ErrorCode.EMAIL_ALREADY_IN_USE);
         }
     }
 
@@ -148,9 +148,9 @@ public class AuthController extends JTBaseEndpoint {
     @PostMapping("/login/username")
     public ResponseEntity<Object> loginWithUsername(@Valid @RequestBody UsernameLoginRequest request) throws JsonProcessingException {
         UserModel user = userService.findByUsername(request.getUsername())
-                .orElseThrow(() -> new JuvaryaCustomerException(ErrorCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new HltCustomerException(ErrorCode.USER_NOT_FOUND));
 
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+        if (!request.getPassword().equals(user.getPassword())) {
             throw new BadCredentialsException("Invalid password");
         }
 
@@ -159,6 +159,7 @@ public class AuthController extends JTBaseEndpoint {
 
         return ResponseEntity.ok(generateJwtResponse(user));
     }
+
 
     @PostMapping("/refreshToken")
     public ResponseEntity<Object> refreshToken(@Valid @RequestBody RefreshTokenRequest refreshTokenRequest) throws JsonProcessingException {
@@ -185,7 +186,7 @@ public class AuthController extends JTBaseEndpoint {
             ));
         }
 
-        throw new JuvaryaCustomerException(ErrorCode.TOKEN_PROCESSING_ERROR);
+        throw new HltCustomerException(ErrorCode.TOKEN_PROCESSING_ERROR);
     }
 
     @PostMapping("/verify")
@@ -206,11 +207,11 @@ public class AuthController extends JTBaseEndpoint {
         UserOTPModel otpModel = userOTPService.findByOtpTypeAndPrimaryContact(otpType, loginRequest.getPrimaryContact());
 
         if (otpModel == null) {
-            throw new JuvaryaCustomerException(ErrorCode.NOT_FOUND);
+            throw new HltCustomerException(ErrorCode.NOT_FOUND);
         }
 
         if (isOtpExpired(otpModel)) {
-            throw new JuvaryaCustomerException(ErrorCode.OTP_EXPIRED);
+            throw new HltCustomerException(ErrorCode.OTP_EXPIRED);
         }
 
         if (!loginRequest.getOtp().equals(otpModel.getOtp())) {

@@ -55,53 +55,13 @@ public class B2BUnitController extends JTBaseEndpoint {
 
 
     @GetMapping("/list")
-    public ResponseEntity<List<B2BUnitListResponse>> listBusinesses() {
-        List<B2BUnitListResponse> businesses = b2BUnitService.listAll();
-        return ResponseEntity.ok(businesses);
-    }
-
-    @GetMapping("/approved")
-    public ResponseEntity<ApiResponse<List<B2BUnitDTO>>> getApprovedBusinesses() {
-        List<B2BUnitDTO> approvedList = b2BUnitService.getApprovedList();
-        ApiResponse<List<B2BUnitDTO>> response = new ApiResponse<>(
-                "Fetched approved businesses successfully",
-                approvedList,
-                approvedList.size()
-        );
-        return ResponseEntity.ok(response);
-    }
-
-    @GetMapping("/pending")
-    @PreAuthorize(JuavaryaConstants.ROLE_USER_ADMIN)
-    public ResponseEntity<ApiResponse<List<B2BUnitDTO>>> getPendingBusinesses() {
-        List<B2BUnitDTO> pendingList = b2BUnitService.getPendingApprovalList();
-        ApiResponse<List<B2BUnitDTO>> response = new ApiResponse<>(
-                "Fetched pending approval businesses successfully",
-                pendingList,
-                pendingList.size()
-        );
-        return ResponseEntity.ok(response);
-    }
-
-    @GetMapping("/byCategory")
-    @PreAuthorize(JuavaryaConstants.ROLE_USER_ADMIN)
-    public ResponseEntity<ApiResponse<Page<B2BUnitDTO>>> getBusinessesByCategoryAndApproval(
-            @RequestParam String categoryName,
-            @RequestParam boolean approved,
+    public ResponseEntity<StandardResponse<Page<B2BUnitListResponse>>> listBusinesses(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-
-        Pageable pageable = PageRequest.of(page, size, Sort.by("creationDate").descending());
-        Page<B2BUnitDTO> businessPage = b2BUnitService.getBusinessesByCategoryAndApproval(categoryName, approved, pageable);
-
-        ApiResponse<Page<B2BUnitDTO>> response = new ApiResponse<>(
-                "Fetched businesses successfully",
-                businessPage,
-                (int) businessPage.getTotalElements()
-        );
-        return ResponseEntity.ok(response);
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Page<B2BUnitListResponse> businesses = b2BUnitService.listAllPaginated(page, size);
+        return ResponseEntity.ok(StandardResponse.page("Businesses fetched successfully", businesses));
     }
-
 
 
     @GetMapping("/{id}")
@@ -119,19 +79,6 @@ public class B2BUnitController extends JTBaseEndpoint {
         return ResponseEntity.ok(response);
     }
 
-
-    @PutMapping("/approve/{businessId}")
-    @PreAuthorize(JuavaryaConstants.ROLE_USER_ADMIN)
-    public ResponseEntity<ApiResponse<String>> approveBusiness(@PathVariable Long businessId) {
-        b2BUnitService.approveBusiness(businessId);
-        ApiResponse<String> response = new ApiResponse<>(
-                "Business approved successfully",
-                "Business ID " + businessId + " is now approved.",
-                1
-        );
-
-        return ResponseEntity.ok(response);
-    }
 
     @GetMapping("/status")
     public ResponseEntity<List<B2BUnitStatusDTO>> getBusinessNameAndApprovalStatusForLoggedInUser() {

@@ -17,8 +17,8 @@ import java.io.IOException;
 @Slf4j
 public class JuvaryaGlobalExceptionHandler {
 
-    @ExceptionHandler(JuvaryaCustomerException.class)
-    public ResponseEntity<ErrorResponse> handleNivaasCustomException(JuvaryaCustomerException customException) {
+    @ExceptionHandler(HltCustomerException.class)
+    public ResponseEntity<ErrorResponse> handleNivaasCustomException(HltCustomerException customException) {
         ErrorCode errorCode = customException.getErrorCode();
         ErrorResponse errorResponse = new ErrorResponse(errorCode.getCode(), customException.getMessage());
         return new ResponseEntity<>(errorResponse, errorCode.getHttpStatus());

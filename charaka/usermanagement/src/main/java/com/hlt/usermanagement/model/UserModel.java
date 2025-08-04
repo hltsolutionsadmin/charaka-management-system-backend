@@ -5,7 +5,6 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -49,7 +48,6 @@ public class UserModel extends AuditableModel {
     @Convert(converter = EncryptedStringConverter.class)
     @Column(name = "PRIMARY_CONTACT", nullable = false)
     private String primaryContact;
-
 
     @Column(name = "primary_contact_hash")
     private String primaryContactHash;

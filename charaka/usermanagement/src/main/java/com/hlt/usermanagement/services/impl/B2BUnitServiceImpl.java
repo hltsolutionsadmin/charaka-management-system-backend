@@ -17,7 +17,7 @@ import com.hlt.usermanagement.repository.B2BUnitRepository;
 import com.hlt.usermanagement.repository.BusinessCategoryRepository;
 import com.hlt.usermanagement.repository.UserRepository;
 import com.hlt.usermanagement.services.B2BUnitService;
-import com.hlt.auth.exception.handling.JuvaryaCustomerException;
+import com.hlt.auth.exception.handling.HltCustomerException;
 import com.hlt.auth.exception.handling.ErrorCode;
 import com.hlt.commonservice.dto.Role;
 import com.hlt.commonservice.user.UserDetailsImpl;
@@ -30,9 +30,7 @@ import com.hlt.utils.SecurityUtils;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -88,7 +86,7 @@ public class B2BUnitServiceImpl extends JTBaseEndpoint implements B2BUnitService
     private UserModel fetchCurrentUser() {
         UserDetailsImpl userDetails = SecurityUtils.getCurrentUserDetails();
         return userRepository.findById(userDetails.getId())
-                .orElseThrow(() -> new JuvaryaCustomerException(ErrorCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new HltCustomerException(ErrorCode.USER_NOT_FOUND));
     }
 
     private void populateBasicDetails(B2BUnitModel unit, B2BUnitRequest request, Optional<B2BUnitModel> existingOpt) {
@@ -96,7 +94,7 @@ public class B2BUnitServiceImpl extends JTBaseEndpoint implements B2BUnitService
         if (request.getContactNumber() != null) unit.setContactNumber(request.getContactNumber());
         if (request.getLatitude() != null) unit.setBusinessLatitude(request.getLatitude());
         if (request.getLongitude() != null) unit.setBusinessLongitude(request.getLongitude());
-        unit.setApproved(existingOpt.map(B2BUnitModel::isApproved).orElse(false));
+        //unit.setEnabled(existingOpt.map(B2BUnitModel::isEnabled).orElse(true));
     }
 
     private void populateAddress(B2BUnitModel unit, B2BUnitRequest request) {
@@ -117,7 +115,7 @@ public class B2BUnitServiceImpl extends JTBaseEndpoint implements B2BUnitService
     private void populateCategory(B2BUnitModel unit, B2BUnitRequest request) {
         if (request.getCategoryId() != null) {
             BusinessCategoryModel category = categoryRepository.findById(request.getCategoryId())
-                    .orElseThrow(() -> new JuvaryaCustomerException(ErrorCode.CATEGORY_NOT_FOUND));
+                    .orElseThrow(() -> new HltCustomerException(ErrorCode.CATEGORY_NOT_FOUND));
             unit.setCategory(category);
         }
     }
@@ -155,18 +153,21 @@ public class B2BUnitServiceImpl extends JTBaseEndpoint implements B2BUnitService
     }
 
     @Override
-    public List<B2BUnitListResponse> listAll() {
-        return b2bUnitRepository.findAll().stream()
-                .map(this::mapToB2BUnitListResponse)
-                .collect(Collectors.toList());
+    public Page<B2BUnitListResponse> listAllPaginated(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("creationDate").descending());
+        Page<B2BUnitModel> b2bUnits = b2bUnitRepository.findAll(pageable);
+
+        return b2bUnits.map(this::mapToB2BUnitListResponse);
     }
+
+
+
     private B2BUnitListResponse mapToB2BUnitListResponse(B2BUnitModel model) {
         B2BUnitListResponse response = new B2BUnitListResponse();
 
         response.setId(model.getId());
         response.setBusinessName(model.getBusinessName());
         response.setEnabled(model.isEnabled());
-        response.setApproved(model.isApproved());
         response.setCreationDate(model.getCreationDate());
 
         if (model.getCategory() != null) {
@@ -190,44 +191,17 @@ public class B2BUnitServiceImpl extends JTBaseEndpoint implements B2BUnitService
         return response;
     }
 
-    @Override
-    public List<B2BUnitDTO> getPendingApprovalList() {
-        return b2bUnitRepository.findByApprovedFalseOrderByCreationDateDesc()
-                .stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<B2BUnitDTO> getApprovedList() {
-        return b2bUnitRepository.findByApprovedTrueOrderByCreationDateDesc()
-                .stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
-    }
     private B2BUnitDTO convertToDTO(B2BUnitModel model) {
         B2BUnitDTO dto = new B2BUnitDTO();
         b2bUnitPopulator.populate(model, dto);
         return dto;
     }
 
-    @Override
-    public void approveBusiness(Long businessId) {
-        B2BUnitModel business = b2bUnitRepository.findById(businessId)
-                .orElseThrow(() -> new JuvaryaCustomerException(ErrorCode.BUSINESS_NOT_FOUND));
-
-        if (Boolean.TRUE.equals(business.isApproved())) {
-            throw new JuvaryaCustomerException(ErrorCode.ALREADY_APPROVED);
-        }
-
-        business.setApproved(true);
-        b2bUnitRepository.save(business);
-    }
 
     @Override
     public B2BUnitDTO getById(Long id) {
         B2BUnitModel model = b2bUnitRepository.findById(id)
-                .orElseThrow(() -> new JuvaryaCustomerException(ErrorCode.BUSINESS_NOT_FOUND));
+                .orElseThrow(() -> new HltCustomerException(ErrorCode.BUSINESS_NOT_FOUND));
 
         B2BUnitDTO dto = new B2BUnitDTO();
         b2bUnitPopulator.populate(model, dto);
@@ -271,7 +245,6 @@ public class B2BUnitServiceImpl extends JTBaseEndpoint implements B2BUnitService
                 b2BUnit.getId(),
                 b2BUnit.getBusinessName(),
                 b2BUnit.isEnabled(),
-                b2BUnit.isApproved(),
                 userRoles,
                 attributes
         );
@@ -312,14 +285,7 @@ public class B2BUnitServiceImpl extends JTBaseEndpoint implements B2BUnitService
 
         return resultsPage;
     }
-    public Page<B2BUnitDTO> getBusinessesByCategoryAndApproval(String categoryName, boolean approved, Pageable pageable) {
-        Page<B2BUnitModel> page = b2bUnitRepository.findByCategory_NameAndApprovedOrderByCreationDateDesc(categoryName, approved, pageable);
-        return page.map(business -> {
-            B2BUnitDTO dto = new B2BUnitDTO();
-            b2bUnitPopulator.populate(business, dto);
-            return dto;
-        });
-    }
+
 
     @Override
     public Page<B2BUnitDTO> searchByCityAndCategory(String city, String categoryName, String searchTerm, Pageable pageable) {
@@ -351,7 +317,7 @@ public class B2BUnitServiceImpl extends JTBaseEndpoint implements B2BUnitService
 
     public AddressDTO getAddressByB2BUnitId(Long unitId) {
         AddressModel addressModel = b2bUnitRepository.findBusinessAddressByUnitId(unitId)
-                .orElseThrow(() -> new JuvaryaCustomerException(ErrorCode.ADDRESS_NOT_FOUND, "Address not found for B2B Unit ID: " + unitId));
+                .orElseThrow(() -> new HltCustomerException(ErrorCode.ADDRESS_NOT_FOUND, "Address not found for B2B Unit ID: " + unitId));
         AddressDTO addressDTO = new AddressDTO();
         addressPopulator.populate(addressModel, addressDTO);
         return addressDTO;

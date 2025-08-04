@@ -2,16 +2,11 @@ package com.hlt.auth;
 
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
-import lombok.extern.slf4j.Slf4j;
 
 import javax.crypto.Cipher;
-import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
-import java.security.SecureRandom;
 import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
 @Converter
 public class EncryptedStringConverter implements AttributeConverter<String, String> {
 
