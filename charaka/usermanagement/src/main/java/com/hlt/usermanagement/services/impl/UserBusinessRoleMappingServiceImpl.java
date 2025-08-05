@@ -16,6 +16,7 @@ import com.hlt.usermanagement.repository.B2BUnitRepository;
 import com.hlt.usermanagement.repository.RoleRepository;
 import com.hlt.usermanagement.repository.UserBusinessRoleMappingRepository;
 import com.hlt.usermanagement.repository.UserRepository;
+import com.hlt.usermanagement.services.EmailService;
 import com.hlt.usermanagement.services.UserBusinessRoleMappingService;
 import com.hlt.usermanagement.utils.PasswordUtil;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +37,7 @@ public class UserBusinessRoleMappingServiceImpl implements UserBusinessRoleMappi
     private final UserBusinessRoleMappingPopulator populator;
     private final UserPopulator userPopulator;
     private final RoleRepository roleRepository;
+    private final EmailService emailService;
 
     @Override
     public UserBusinessRoleMappingDTO assignUserToBusinessWithUserDetails(UserDTO userDTO, Long b2bUnitId, String roleStr) {
@@ -117,6 +119,7 @@ public class UserBusinessRoleMappingServiceImpl implements UserBusinessRoleMappi
         user.setPassword(plainPassword);
         //TODO :Send mail
         // emailService.sendUserCredentials(user.getEmail(), user.getUsername(), plainPassword);
+        emailService.sendUserCredentials(user.getEmail(), user.getUsername(), plainPassword);
         return userRepository.save(user);
     }
 }
