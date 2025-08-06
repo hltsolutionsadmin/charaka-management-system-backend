@@ -8,6 +8,7 @@ import com.hlt.usermanagement.dto.UserDTO;
 import com.hlt.usermanagement.model.*;
 import com.hlt.usermanagement.populator.UserBusinessRoleMappingPopulator;
 import com.hlt.usermanagement.repository.*;
+import com.hlt.usermanagement.services.EmailService;
 import com.hlt.usermanagement.services.UserBusinessRoleMappingService;
 import com.hlt.usermanagement.services.UserService;
 import com.hlt.usermanagement.utils.PasswordUtil;
@@ -32,6 +33,7 @@ public class UserBusinessRoleMappingServiceImpl implements UserBusinessRoleMappi
     private final B2BUnitRepository b2bRepository;
     private final RoleRepository roleRepository;
     private final UserBusinessRoleMappingPopulator populator;
+    private final EmailService emailService;
 
     @Override
     @Transactional
@@ -193,29 +195,49 @@ public class UserBusinessRoleMappingServiceImpl implements UserBusinessRoleMappi
         user.setPrimaryContact(dto.getPrimaryContact());
         user.setGender(dto.getGender());
 
+        // Assign default ROLE_USER first
         RoleModel defaultRole = roleRepository.findByName(ERole.ROLE_USER)
                 .orElseThrow(() -> new HltCustomerException(ErrorCode.ROLE_NOT_FOUND));
-
         user.setRoleModels(Set.of(defaultRole));
 
+        // Generate random password
         String plainPassword = PasswordUtil.generateRandomPassword(8);
         user.setPassword(plainPassword);
 
-        user.setB2bUnit(b2bRepository.findById(businessId)
-                .orElseThrow(() -> new HltCustomerException(ErrorCode.BUSINESS_NOT_FOUND)));
+        // Fetch business entity & set it
+        B2BUnitModel business = b2bRepository.findById(businessId)
+                .orElseThrow(() -> new HltCustomerException(ErrorCode.BUSINESS_NOT_FOUND));
+        user.setB2bUnit(business);
 
-        UserModel savedUser = null;
+        UserModel savedUser;
         try {
             savedUser = userService.saveUser(user);
         } catch (Exception e) {
             throw new HltCustomerException(ErrorCode.USER_ALREADY_EXISTS, "User with this email or contact already exists");
         }
 
-        // TODO: Email credentials securely to user
-        // emailService.sendUserCredentials(user.getEmail(), user.getUsername(), plainPassword);
+        // Extract business name for email
+        String businessName = business.getBusinessName();
+
+        // Extract roles for email
+        Set<String> roles = savedUser.getRoleModels()
+                .stream()
+                .map(RoleModel::getName)
+                .map(Enum::name)
+                .collect(Collectors.toSet());
+
+        // Email credentials securely
+        emailService.sendUserCredentials(
+                savedUser.getEmail(),
+                savedUser.getUsername(),
+                plainPassword,
+                businessName,
+                roles
+        );
 
         return savedUser;
     }
+
 
     private UserDTO toUserDTO(UserModel user) {
         return UserDTO.builder()
