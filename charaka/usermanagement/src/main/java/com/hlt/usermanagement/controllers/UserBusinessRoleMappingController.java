@@ -13,11 +13,12 @@ import com.hlt.usermanagement.services.UserBusinessRoleMappingService;
 import com.hlt.utils.JuavaryaConstants;
 import com.hlt.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/mappings")
@@ -26,60 +27,89 @@ public class UserBusinessRoleMappingController {
 
     private final UserRepository userRepository;
     private final UserBusinessRoleMappingService userBusinessRoleMappingService;
-
     @PostMapping("/onboard-hospital-admin")
     @PreAuthorize(JuavaryaConstants.ROLE_SUPER_ADMIN)
-    public ResponseEntity<StandardResponse<String>> onboardHospitalAdmin(@RequestBody UserBusinessRoleMappingDTO dto) {
-        userBusinessRoleMappingService.onboardHospitalAdmin(dto);
-        return ResponseEntity.ok(StandardResponse.message("Hospital Admin onboarded successfully"));
+    public ResponseEntity<StandardResponse<UserBusinessRoleMappingDTO>> onboardHospitalAdmin(@RequestBody UserBusinessRoleMappingDTO dto) {
+        UserBusinessRoleMappingDTO result = userBusinessRoleMappingService.onboardHospitalAdmin(dto);
+        return ResponseEntity.ok(StandardResponse.single("Hospital Admin onboarded successfully", result));
     }
 
     @PostMapping("/onboard-doctor")
-    @PreAuthorize(JuavaryaConstants.ROLE_HOSPITAL_ADMIN)
-    public ResponseEntity<StandardResponse<String>> onboardDoctor(@RequestBody UserBusinessRoleMappingDTO dto) {
+    @PreAuthorize(JuavaryaConstants.ROLE_HOSPITAL_ADMIN + " or " + JuavaryaConstants.ROLE_SUPER_ADMIN)
+    public ResponseEntity<StandardResponse<UserBusinessRoleMappingDTO>> onboardDoctor(@RequestBody UserBusinessRoleMappingDTO dto) {
         UserModel currentUser = fetchCurrentUser();
-        validateHospitalAdminAccess(currentUser);
-        dto.setBusinessId(currentUser.getB2bUnit().getId());
-        userBusinessRoleMappingService.onboardDoctor(dto);
-        return ResponseEntity.ok(StandardResponse.message("Doctor onboarded successfully"));
+        enforceBusinessScope(currentUser, dto);
+        UserBusinessRoleMappingDTO result = userBusinessRoleMappingService.onboardDoctor(dto);
+        return ResponseEntity.ok(StandardResponse.single("Doctor onboarded successfully", result));
     }
 
-    @PostMapping("/onboard-Telecaller")
-    @PreAuthorize(JuavaryaConstants.ROLE_HOSPITAL_ADMIN)
-    public ResponseEntity<StandardResponse<String>> onboardTellecaller(@RequestBody UserBusinessRoleMappingDTO dto) {
-        userBusinessRoleMappingService.onboardTelecaller(dto);
-        return ResponseEntity.ok(StandardResponse.message("Doctor onboarded successfully"));
+    @PostMapping("/onboard-telecaller")
+    @PreAuthorize(JuavaryaConstants.ROLE_HOSPITAL_ADMIN + " or " + JuavaryaConstants.ROLE_SUPER_ADMIN)
+    public ResponseEntity<StandardResponse<UserBusinessRoleMappingDTO>> onboardTelecaller(@RequestBody UserBusinessRoleMappingDTO dto) {
+        UserModel currentUser = fetchCurrentUser();
+        enforceBusinessScope(currentUser, dto);
+        UserBusinessRoleMappingDTO result = userBusinessRoleMappingService.onboardTelecaller(dto);
+        return ResponseEntity.ok(StandardResponse.single("Telecaller onboarded successfully", result));
     }
 
     @PostMapping("/onboard-receptionist")
-   // @PreAuthorize(JuavaryaConstants.ROLE_HOSPITAL_ADMIN) TODO add BOth roles
-    public ResponseEntity<StandardResponse<String>> onboardReceptionist(@RequestBody UserBusinessRoleMappingDTO dto) {
+    @PreAuthorize(JuavaryaConstants.ROLE_HOSPITAL_ADMIN + " or " + JuavaryaConstants.ROLE_SUPER_ADMIN)
+    public ResponseEntity<StandardResponse<UserBusinessRoleMappingDTO>> onboardReceptionist(@RequestBody UserBusinessRoleMappingDTO dto) {
         UserModel currentUser = fetchCurrentUser();
-        validateHospitalAdminAccess(currentUser);
-        dto.setBusinessId(currentUser.getB2bUnit().getId());
-        userBusinessRoleMappingService.onboardReceptionist(dto);
-        return ResponseEntity.ok(StandardResponse.message("Receptionist onboarded successfully"));
+        enforceBusinessScope(currentUser, dto);
+        UserBusinessRoleMappingDTO result = userBusinessRoleMappingService.onboardReceptionist(dto);
+        return ResponseEntity.ok(StandardResponse.single("Receptionist onboarded successfully", result));
     }
 
     @PostMapping("/assign-telecaller")
-    @PreAuthorize(JuavaryaConstants.ROLE_HOSPITAL_ADMIN)
+    @PreAuthorize(JuavaryaConstants.ROLE_HOSPITAL_ADMIN + " or " + JuavaryaConstants.ROLE_SUPER_ADMIN)
     public ResponseEntity<StandardResponse<String>> assignTelecallerToHospital(@RequestParam Long telecallerUserId) {
         UserModel currentUser = fetchCurrentUser();
-        validateHospitalAdminAccess(currentUser);
-        Long businessId = currentUser.getB2bUnit().getId();
+        Long businessId = getBusinessScope(currentUser);
         userBusinessRoleMappingService.assignTelecallerToHospital(telecallerUserId, businessId);
-        return ResponseEntity.ok(StandardResponse.message("Telecaller assigned successfully to your hospital"));
+        return ResponseEntity.ok(StandardResponse.single("Telecaller assigned successfully", null));
+    }
+
+
+    @GetMapping("/doctors")
+    @PreAuthorize(JuavaryaConstants.ROLE_HOSPITAL_ADMIN + " or " + JuavaryaConstants.ROLE_SUPER_ADMIN)
+    public ResponseEntity<StandardResponse<Page<UserDTO>>> getDoctorsByHospital(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) Long hospitalId
+    ) {
+        Long resolvedHospitalId = resolveHospitalId(hospitalId);
+        Pageable pageable = PageRequest.of(page, size);
+        Page<UserDTO> doctors = userBusinessRoleMappingService.getDoctorsByHospital(resolvedHospitalId, pageable);
+        return ResponseEntity.ok(StandardResponse.page("Doctors for hospital", doctors));
+    }
+
+    @GetMapping("/receptionists")
+    @PreAuthorize(JuavaryaConstants.ROLE_HOSPITAL_ADMIN + " or " + JuavaryaConstants.ROLE_SUPER_ADMIN)
+    public ResponseEntity<StandardResponse<Page<UserDTO>>> getReceptionistsByHospital(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) Long hospitalId
+    ) {
+        Long resolvedHospitalId = resolveHospitalId(hospitalId);
+        Pageable pageable = PageRequest.of(page, size);
+        Page<UserDTO> receptionists = userBusinessRoleMappingService.getReceptionistsByHospital(resolvedHospitalId, pageable);
+        return ResponseEntity.ok(StandardResponse.page("Receptionists for hospital", receptionists));
     }
 
     @GetMapping("/available-telecallers")
-    @PreAuthorize(JuavaryaConstants.ROLE_HOSPITAL_ADMIN)
-    public ResponseEntity<StandardResponse<List<UserDTO>>> getAvailableTelecallersForAssignment() {
-        UserModel currentUser = fetchCurrentUser();
-        validateHospitalAdminAccess(currentUser);
-        Long hospitalId = currentUser.getB2bUnit().getId();
-        List<UserDTO> telecallers = userBusinessRoleMappingService.getAssignableTelecallersForHospital(hospitalId);
-        return ResponseEntity.ok(StandardResponse.list("Available telecallers for assignment", telecallers));
+    @PreAuthorize(JuavaryaConstants.ROLE_HOSPITAL_ADMIN + " or " + JuavaryaConstants.ROLE_SUPER_ADMIN)
+    public ResponseEntity<StandardResponse<Page<UserDTO>>> getAvailableTelecallersForAssignment(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) Long hospitalId
+    ) {
+        Long resolvedHospitalId = resolveHospitalId(hospitalId);
+        Page<UserDTO> telecallers = userBusinessRoleMappingService
+                .getAssignableTelecallersForHospital(resolvedHospitalId, page, size);
+        return ResponseEntity.ok(StandardResponse.page("Available telecallers for assignment", telecallers));
     }
+
 
     private UserModel fetchCurrentUser() {
         UserDetailsImpl userDetails = SecurityUtils.getCurrentUserDetails();
@@ -100,4 +130,46 @@ public class UserBusinessRoleMappingController {
         }
     }
 
+    private void enforceBusinessScope(UserModel currentUser, UserBusinessRoleMappingDTO dto) {
+        boolean isSuperAdmin = currentUser.getRoleModels().stream()
+                .anyMatch(role -> role.getName() == ERole.ROLE_SUPER_ADMIN);
+
+        if (isSuperAdmin) {
+            if (dto.getBusinessId() == null) {
+                throw new HltCustomerException(ErrorCode.BUSINESS_NOT_FOUND, "Business ID is required for Super Admin");
+            }
+            return;
+        }
+
+        validateHospitalAdminAccess(currentUser);
+        dto.setBusinessId(currentUser.getB2bUnit().getId());
+    }
+
+    private Long getBusinessScope(UserModel currentUser) {
+        boolean isSuperAdmin = currentUser.getRoleModels().stream()
+                .anyMatch(role -> role.getName() == ERole.ROLE_SUPER_ADMIN);
+
+        if (isSuperAdmin) {
+            throw new HltCustomerException(ErrorCode.BAD_REQUEST, "Super admin must provide businessId explicitly");
+        }
+
+        validateHospitalAdminAccess(currentUser);
+        return currentUser.getB2bUnit().getId();
+    }
+
+    private Long resolveHospitalId(Long inputHospitalId) {
+        UserModel currentUser = fetchCurrentUser();
+        boolean isSuperAdmin = currentUser.getRoleModels().stream()
+                .anyMatch(role -> role.getName() == ERole.ROLE_SUPER_ADMIN);
+
+        if (isSuperAdmin) {
+            if (inputHospitalId == null) {
+                throw new HltCustomerException(ErrorCode.BUSINESS_NOT_FOUND, "Super Admin must provide hospitalId");
+            }
+            return inputHospitalId;
+        }
+
+        validateHospitalAdminAccess(currentUser);
+        return currentUser.getB2bUnit().getId();
+    }
 }

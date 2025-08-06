@@ -32,7 +32,7 @@ public class UserDTO {
     private List<AddressDTO> addresses;
     private Long businessId;
     private Set<String> roles;
-    @JsonIgnore
+    //JsonIgnore to prevent password from being serialized in API responses
     private String password;
 
 
