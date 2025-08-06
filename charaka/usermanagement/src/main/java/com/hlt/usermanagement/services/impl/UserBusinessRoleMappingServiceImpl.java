@@ -7,20 +7,19 @@ import com.hlt.usermanagement.dto.UserBusinessRoleMappingDTO;
 import com.hlt.usermanagement.dto.UserDTO;
 import com.hlt.usermanagement.model.*;
 import com.hlt.usermanagement.populator.UserBusinessRoleMappingPopulator;
+import com.hlt.usermanagement.populator.UserPopulator;
 import com.hlt.usermanagement.repository.*;
 import com.hlt.usermanagement.services.UserBusinessRoleMappingService;
 import com.hlt.usermanagement.services.UserService;
-import com.hlt.usermanagement.utils.PasswordUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+
+import static com.hlt.usermanagement.utils.PasswordUtil.generateRandomPassword;
 
 @Service
 @RequiredArgsConstructor
@@ -35,12 +34,12 @@ public class UserBusinessRoleMappingServiceImpl implements UserBusinessRoleMappi
     private final B2BUnitRepository b2bRepository;
     private final RoleRepository roleRepository;
     private final UserBusinessRoleMappingPopulator populator;
+    private final UserPopulator userPopulator;
 
     @Override
     @Transactional
     public UserBusinessRoleMappingDTO onboardHospitalAdmin(UserBusinessRoleMappingDTO dto) {
         Long businessId = dto.getBusinessId();
-
         if (mappingRepository.existsByB2bUnitIdAndRole(businessId, ERole.ROLE_HOSPITAL_ADMIN)) {
             throw new HltCustomerException(ErrorCode.HOSPITAL_ADMIN_ALREADY_EXISTS);
         }
@@ -49,12 +48,8 @@ public class UserBusinessRoleMappingServiceImpl implements UserBusinessRoleMappi
         assignRolesToUser(user, ERole.ROLE_HOSPITAL_ADMIN);
         userRepository.save(user);
 
-        UserBusinessRoleMappingModel mapping = createMapping(user, ERole.ROLE_HOSPITAL_ADMIN);
-        mappingRepository.save(mapping);
-
-        UserBusinessRoleMappingDTO response = new UserBusinessRoleMappingDTO();
-        populator.populate(mapping, response);
-        return response;
+        UserBusinessRoleMappingModel mapping = saveMapping(user, ERole.ROLE_HOSPITAL_ADMIN);
+        return populateResponse(mapping);
     }
 
     @Override
@@ -66,7 +61,17 @@ public class UserBusinessRoleMappingServiceImpl implements UserBusinessRoleMappi
     @Override
     @Transactional
     public UserBusinessRoleMappingDTO onboardTelecaller(UserBusinessRoleMappingDTO dto) {
-        return   onboardGenericRole(dto, ERole.ROLE_TELECALLER);
+        UserDTO userDTO = dto.getUserDetails();
+        userRepository.findByUsername(userDTO.getUsername()).ifPresent(user -> {
+            throw new HltCustomerException(ErrorCode.USER_ALREADY_EXISTS);
+        });
+
+        UserModel user = createUserWithoutBusiness(userDTO);
+        assignRolesToUser(user, ERole.ROLE_TELECALLER);
+        userRepository.save(user);
+
+        UserBusinessRoleMappingModel mapping = saveMapping(user, ERole.ROLE_TELECALLER);
+        return populateResponse(mapping);
     }
 
     @Override
@@ -75,75 +80,39 @@ public class UserBusinessRoleMappingServiceImpl implements UserBusinessRoleMappi
         return onboardGenericRole(dto, ERole.ROLE_RECEPTIONIST);
     }
 
-    private UserBusinessRoleMappingDTO onboardGenericRole(UserBusinessRoleMappingDTO dto, ERole role) {
-        UserModel user = fetchOrCreateUser(dto);
-        assignRolesToUser(user, role);
-        userRepository.save(user);
-        validateDuplicateMapping(user.getId(), dto.getBusinessId(), role);
-        UserBusinessRoleMappingModel mapping = createMapping(user, role);
-        mappingRepository.save(mapping);
-
-        UserBusinessRoleMappingDTO response = new UserBusinessRoleMappingDTO();
-        populator.populate(mapping, response);
-        return response;
-    }
-
     @Override
     @Transactional
     public UserBusinessRoleMappingDTO assignTelecallerToHospital(Long telecallerId, Long hospitalId) {
-        if (telecallerId == null) {
-            throw new HltCustomerException(ErrorCode.NOT_FOUND, "Telecaller ID is required for assignment");
-        }
+        if (telecallerId == null) throw new HltCustomerException(ErrorCode.NOT_FOUND, "Telecaller ID is required");
 
         UserModel user = getUserOrThrow(telecallerId);
 
         if (mappingRepository.countByUserIdAndRoleAndIsActiveTrue(user.getId(), ERole.ROLE_TELECALLER) >= MAX_HOSPITALS_PER_TELECALLER) {
-            throw new HltCustomerException(ErrorCode.INVALID_ROLE_FOR_OPERATION, "Telecaller is already assigned to 2 hospitals");
+            throw new HltCustomerException(ErrorCode.INVALID_ROLE_FOR_OPERATION, "Telecaller already assigned to 2 hospitals");
         }
 
         if (mappingRepository.existsByUserIdAndB2bUnitIdAndRoleAndIsActiveTrue(user.getId(), hospitalId, ERole.ROLE_TELECALLER)) {
             throw new HltCustomerException(ErrorCode.ALREADY_EXISTS, "Telecaller already assigned to this hospital");
         }
 
-        user.setB2bUnit(b2bRepository.findById(hospitalId)
-                .orElseThrow(() -> new HltCustomerException(ErrorCode.BUSINESS_NOT_FOUND)));
-
-        UserBusinessRoleMappingModel mapping = createMapping(user, ERole.ROLE_TELECALLER);
-        mappingRepository.save(mapping);
-
-        UserBusinessRoleMappingDTO response = new UserBusinessRoleMappingDTO();
-        populator.populate(mapping, response);
-
-        return response;
+        user.setB2bUnit(b2bRepository.findById(hospitalId).orElseThrow(() -> new HltCustomerException(ErrorCode.BUSINESS_NOT_FOUND)));
+        UserBusinessRoleMappingModel mapping = saveMapping(user, ERole.ROLE_TELECALLER);
+        return populateResponse(mapping);
     }
-
 
     @Override
     public Page<UserDTO> getAssignableTelecallersForHospital(Long hospitalId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
+        Page<Long> userIdsPage = mappingRepository.findUserIdsWithRoleMappedToLessThanTwoHospitals(ERole.ROLE_TELECALLER, pageable);
 
-        // Step 1: Get paginated telecaller userIds mapped to < 2 hospitals
-        Page<Long> userIdsPage = mappingRepository
-                .findUserIdsWithRoleMappedToLessThanTwoHospitals(ERole.ROLE_TELECALLER, pageable);
-
-        List<UserDTO> assignableTelecallers = new ArrayList<>();
-
-        // Step 2: Filter out those already assigned to this hospital
+        List<UserDTO> assignable = new ArrayList<>();
         for (Long userId : userIdsPage.getContent()) {
-            boolean alreadyAssigned = mappingRepository
-                    .existsByUserIdAndB2bUnitIdAndRoleAndIsActiveTrue(userId, hospitalId, ERole.ROLE_TELECALLER);
-
-            if (!alreadyAssigned) {
-                UserModel user = userRepository.findById(userId)
-                        .orElseThrow(() -> new HltCustomerException(ErrorCode.USER_NOT_FOUND));
-                assignableTelecallers.add(toUserDTO(user));
+            if (!mappingRepository.existsByUserIdAndB2bUnitIdAndRoleAndIsActiveTrue(userId, hospitalId, ERole.ROLE_TELECALLER)) {
+                assignable.add(toUserDTO(getUserOrThrow(userId)));
             }
         }
-
-        return new PageImpl<>(assignableTelecallers, pageable, userIdsPage.getTotalElements());
+        return new PageImpl<>(assignable, pageable, userIdsPage.getTotalElements());
     }
-
-
 
     @Override
     public Page<UserDTO> getDoctorsByHospital(Long hospitalId, Pageable pageable) {
@@ -155,15 +124,18 @@ public class UserBusinessRoleMappingServiceImpl implements UserBusinessRoleMappi
         return getUsersByRoleAndHospital(hospitalId, ERole.ROLE_RECEPTIONIST, pageable);
     }
 
-    private Page<UserDTO> getUsersByRoleAndHospital(Long hospitalId, ERole role, Pageable pageable) {
-        Page<UserBusinessRoleMappingModel> page = mappingRepository.findByB2bUnitIdAndRole(hospitalId, role, pageable);
-        return page.map(mapping -> toUserDTO(mapping.getUser()));
+
+    private UserBusinessRoleMappingDTO onboardGenericRole(UserBusinessRoleMappingDTO dto, ERole role) {
+        UserModel user = fetchOrCreateUser(dto);
+        assignRolesToUser(user, role);
+        userRepository.save(user);
+        validateDuplicateMapping(user.getId(), dto.getBusinessId(), role);
+        UserBusinessRoleMappingModel mapping = saveMapping(user, role);
+        return populateResponse(mapping);
     }
 
-
     private UserModel getUserOrThrow(Long userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new HltCustomerException(ErrorCode.NOT_FOUND, "User not found"));
+        return userRepository.findById(userId).orElseThrow(() -> new HltCustomerException(ErrorCode.NOT_FOUND, "User not found"));
     }
 
     private void validateDuplicateMapping(Long userId, Long hospitalId, ERole role) {
@@ -172,19 +144,19 @@ public class UserBusinessRoleMappingServiceImpl implements UserBusinessRoleMappi
         }
     }
 
-    private UserBusinessRoleMappingModel createMapping(UserModel user, ERole role) {
-        return UserBusinessRoleMappingModel.builder()
+    private UserBusinessRoleMappingModel saveMapping(UserModel user, ERole role) {
+        return mappingRepository.save(UserBusinessRoleMappingModel.builder()
                 .user(user)
                 .b2bUnit(user.getB2bUnit())
                 .role(role)
                 .isActive(true)
-                .build();
+                .build());
     }
 
     private void assignRolesToUser(UserModel user, ERole role) {
         RoleModel roleModel = roleRepository.findByName(role)
                 .orElseThrow(() -> new HltCustomerException(ErrorCode.ROLE_NOT_FOUND));
-        user.setRoleModels(new HashSet<>(Collections.singletonList(roleModel)));
+        user.setRoleModels(Set.of(roleModel));
     }
 
     private UserModel fetchOrCreateUser(UserBusinessRoleMappingDTO dto) {
@@ -202,20 +174,36 @@ public class UserBusinessRoleMappingServiceImpl implements UserBusinessRoleMappi
         user.setEmail(dto.getEmail());
         user.setPrimaryContact(dto.getPrimaryContact());
         user.setGender(dto.getGender());
-
         assignRolesToUser(user, ERole.ROLE_USER);
-
-        String plainPassword = PasswordUtil.generateRandomPassword(8);
-        user.setPassword(plainPassword);
-
-        user.setB2bUnit(b2bRepository.findById(businessId)
-                .orElseThrow(() -> new HltCustomerException(ErrorCode.BUSINESS_NOT_FOUND)));
+        user.setPassword(generateRandomPassword(8));
+        user.setB2bUnit(b2bRepository.findById(businessId).orElseThrow(() -> new HltCustomerException(ErrorCode.BUSINESS_NOT_FOUND)));
 
         try {
             return userService.saveUser(user);
         } catch (Exception e) {
             throw new HltCustomerException(ErrorCode.USER_ALREADY_EXISTS, "User with this email or contact already exists");
         }
+    }
+
+    private UserModel createUserWithoutBusiness(UserDTO dto) {
+        UserModel user = new UserModel();
+        user.setFullName(dto.getFullName());
+        user.setUsername(dto.getUsername());
+        user.setEmail(dto.getEmail());
+        user.setPrimaryContact(dto.getPrimaryContact());
+        user.setGender(dto.getGender());
+        return user;
+    }
+
+    private UserBusinessRoleMappingDTO populateResponse(UserBusinessRoleMappingModel mapping) {
+        UserBusinessRoleMappingDTO response = new UserBusinessRoleMappingDTO();
+        populator.populate(mapping, response);
+        return response;
+    }
+
+    private Page<UserDTO> getUsersByRoleAndHospital(Long hospitalId, ERole role, Pageable pageable) {
+        return mappingRepository.findByB2bUnitIdAndRole(hospitalId, role, pageable)
+                .map(mapping -> toUserDTO(mapping.getUser()));
     }
 
     private UserDTO toUserDTO(UserModel user) {

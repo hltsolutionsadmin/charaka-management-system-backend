@@ -44,10 +44,10 @@ public class UserBusinessRoleMappingController {
     }
 
     @PostMapping("/onboard-telecaller")
-    @PreAuthorize(JuavaryaConstants.ROLE_HOSPITAL_ADMIN + " or " + JuavaryaConstants.ROLE_SUPER_ADMIN)
-    public ResponseEntity<StandardResponse<UserBusinessRoleMappingDTO>> onboardTelecaller(@RequestBody UserBusinessRoleMappingDTO dto) {
+    @PreAuthorize(JuavaryaConstants.ROLE_SUPER_ADMIN)
+    public ResponseEntity<StandardResponse<UserBusinessRoleMappingDTO>> onboardTelecaller(
+            @RequestBody UserBusinessRoleMappingDTO dto) {
         UserModel currentUser = fetchCurrentUser();
-        enforceBusinessScope(currentUser, dto);
         UserBusinessRoleMappingDTO result = userBusinessRoleMappingService.onboardTelecaller(dto);
         return ResponseEntity.ok(StandardResponse.single("Telecaller onboarded successfully", result));
     }
@@ -63,12 +63,13 @@ public class UserBusinessRoleMappingController {
 
     @PostMapping("/assign-telecaller")
     @PreAuthorize(JuavaryaConstants.ROLE_HOSPITAL_ADMIN + " or " + JuavaryaConstants.ROLE_SUPER_ADMIN)
-    public ResponseEntity<StandardResponse<String>> assignTelecallerToHospital(@RequestParam Long telecallerUserId) {
+    public ResponseEntity<StandardResponse<UserBusinessRoleMappingDTO>> assignTelecallerToHospital(@RequestParam Long telecallerUserId) {
         UserModel currentUser = fetchCurrentUser();
         Long businessId = getBusinessScope(currentUser);
-        userBusinessRoleMappingService.assignTelecallerToHospital(telecallerUserId, businessId);
-        return ResponseEntity.ok(StandardResponse.single("Telecaller assigned successfully", null));
+        UserBusinessRoleMappingDTO result = userBusinessRoleMappingService.assignTelecallerToHospital(telecallerUserId, businessId);
+        return ResponseEntity.ok(StandardResponse.single("Telecaller assigned successfully", result));
     }
+
 
 
     @GetMapping("/doctors")
