@@ -44,8 +44,15 @@ public class UserBusinessRoleMappingController {
         return ResponseEntity.ok(StandardResponse.message("Doctor onboarded successfully"));
     }
 
-    @PostMapping("/onboard-receptionist")
+    @PostMapping("/onboard-Telecaller")
     @PreAuthorize(JuavaryaConstants.ROLE_HOSPITAL_ADMIN)
+    public ResponseEntity<StandardResponse<String>> onboardTellecaller(@RequestBody UserBusinessRoleMappingDTO dto) {
+        userBusinessRoleMappingService.onboardTelecaller(dto);
+        return ResponseEntity.ok(StandardResponse.message("Doctor onboarded successfully"));
+    }
+
+    @PostMapping("/onboard-receptionist")
+   // @PreAuthorize(JuavaryaConstants.ROLE_HOSPITAL_ADMIN) TODO add BOth roles
     public ResponseEntity<StandardResponse<String>> onboardReceptionist(@RequestBody UserBusinessRoleMappingDTO dto) {
         UserModel currentUser = fetchCurrentUser();
         validateHospitalAdminAccess(currentUser);

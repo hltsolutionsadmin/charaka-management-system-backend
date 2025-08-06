@@ -42,10 +42,6 @@ public class UserBusinessRoleMappingModel extends AuditableModel {
     @Column(name = "role", nullable = false, length = 50)
     private ERole role;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "mapping_type", nullable = false)
-    private EMappingType mappingType;
-
     @Column(name = "is_active", nullable = false)
     private Boolean isActive;
 

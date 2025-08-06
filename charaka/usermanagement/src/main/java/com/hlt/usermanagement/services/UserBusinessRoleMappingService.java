@@ -8,20 +8,21 @@ import java.util.List;
 public interface UserBusinessRoleMappingService {
 
 
-        UserBusinessRoleMappingDTO onboardHospitalAdmin(UserBusinessRoleMappingDTO dto);
+    UserBusinessRoleMappingDTO onboardHospitalAdmin(UserBusinessRoleMappingDTO dto);
 
-        void onboardDoctor(UserBusinessRoleMappingDTO dto);
+    void onboardTelecaller(UserBusinessRoleMappingDTO dto);
 
-        void onboardReceptionist(UserBusinessRoleMappingDTO dto);
+    void onboardDoctor(UserBusinessRoleMappingDTO dto);
 
-        void assignTelecallerToHospital(Long telecallerId, Long hospitalId);
+    void onboardReceptionist(UserBusinessRoleMappingDTO dto);
 
-        List<UserDTO> getAssignableTelecallersForHospital(Long hospitalId);
+    void assignTelecallerToHospital(Long telecallerId, Long hospitalId);
 
-        List<UserDTO> getDoctorsByHospital(Long hospitalId);
+    List<UserDTO> getAssignableTelecallersForHospital(Long hospitalId);
 
-        List<UserDTO> getReceptionistsByHospital(Long hospitalId);
+    List<UserDTO> getDoctorsByHospital(Long hospitalId);
 
+    List<UserDTO> getReceptionistsByHospital(Long hospitalId);
 
 
 }
