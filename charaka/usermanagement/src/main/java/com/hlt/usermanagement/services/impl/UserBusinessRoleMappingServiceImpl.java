@@ -73,9 +73,9 @@ public class UserBusinessRoleMappingServiceImpl implements UserBusinessRoleMappi
             throw new HltCustomerException(ErrorCode.INVALID_ROLE_FOR_OPERATION, "Telecaller is already assigned to 2 hospitals");
         }
 
-        if (mappingRepository.existsByUserIdAndB2BUnitIdAndRoleAndIsActiveTrue(user.getId(), hospitalId, ERole.ROLE_TELECALLER)) {
-            throw new HltCustomerException(ErrorCode.ALREADY_EXISTS, "Telecaller already assigned to this hospital");
-        }
+//        if (mappingRepository.existsByUserIdAndB2bUnitAndRoleAndIsActiveTrue(user.getId(), hospitalId, ERole.ROLE_TELECALLER)) {
+//            throw new HltCustomerException(ErrorCode.ALREADY_EXISTS, "Telecaller already assigned to this hospital");
+//        }
 
         user.setB2bUnit(b2bRepository.findById(hospitalId)
                 .orElseThrow(() -> new HltCustomerException(ErrorCode.BUSINESS_NOT_FOUND)));
@@ -107,9 +107,9 @@ public class UserBusinessRoleMappingServiceImpl implements UserBusinessRoleMappi
     }
 
     private void validateDuplicateMapping(Long userId, Long hospitalId, ERole role) {
-        if (mappingRepository.existsByUserIdAndB2BUnitIdAndRole(userId, hospitalId, role)) {
-            throw new HltCustomerException(ErrorCode.ALREADY_EXISTS, role.name() + " already mapped to this hospital");
-        }
+//        if (mappingRepository.existsByUserIdAndB2BUnitIdAndRole(userId, hospitalId, role)) {
+//            throw new HltCustomerException(ErrorCode.ALREADY_EXISTS, role.name() + " already mapped to this hospital");
+//        }
     }
 
     private UserBusinessRoleMappingModel createMapping(UserModel user, ERole role) {
