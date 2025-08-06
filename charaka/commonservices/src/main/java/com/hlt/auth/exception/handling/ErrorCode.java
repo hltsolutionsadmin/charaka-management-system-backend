@@ -12,30 +12,25 @@ public enum ErrorCode {
     EMAIL_ALREADY_IN_USE(1002, "Email Is Already In Use", HttpStatus.CONFLICT),
     UNAUTHORIZED(1003, "Unauthorized Access", HttpStatus.UNAUTHORIZED),
     UNSUPPORTED_MAPPING_TYPE(1021, "Unsupported mapping type for the given role", HttpStatus.BAD_REQUEST),
+    MAPPING_ALREADY_DEACTIVATED(1002, "User mapping is already deactivated", HttpStatus.UNPROCESSABLE_ENTITY),
+    BUSINESS_NOT_FOUND(1002, "Business not found", HttpStatus.NOT_FOUND),
+    MAPPING_NOT_FOUND(1003, "Mapping not found", HttpStatus.NOT_FOUND),
+    TELECALLER_MAPPING_LIMIT_EXCEEDED(1005, "Telecaller cannot be mapped to more than 2 hospitals", HttpStatus.CONFLICT),
+    INVALID_ROLE(1007, "Invalid role provided", HttpStatus.BAD_REQUEST),
+    UNAUTHORIZED_OPERATION(1016, "Unauthorized operation", HttpStatus.UNAUTHORIZED),
+    INVALID_ROLE_FOR_OPERATION(1017, "Invalid role for this operation", HttpStatus.FORBIDDEN),
 
-    TELECALLER_MAPPING_LIMIT_EXCEEDED(1022, "A telecaller can only be mapped to a maximum of 2 hospitals.", HttpStatus.BAD_REQUEST),
-
-
+    UNAUTHORIZED_ROLE_ASSIGNMENT(1006, "You are not allowed to assign this role", HttpStatus.FORBIDDEN),
 
     // ===========================
     // OTP & Token (1800–1899)
     // ===========================
-    OTP_NOT_FOUND(1800, "Unable To Find OTP", HttpStatus.NOT_FOUND),
     OTP_EXPIRED(1801, "OTP Expired", HttpStatus.BAD_REQUEST),
-    INVALID_OTP(1802, "Invalid OTP", HttpStatus.BAD_REQUEST),
-    INVALID_REFRESH_TOKEN(1803, "Invalid Refresh Token", HttpStatus.BAD_REQUEST),
-    INVALID_VOTE_TYPE(1803, "Invalid vote type provided. Allowed values: BRANCH, COLLEGE.", HttpStatus.BAD_REQUEST),
     TOKEN_PROCESSING_ERROR(1804, "Error Processing Refresh Token", HttpStatus.INTERNAL_SERVER_ERROR),
-    UNAUTHORIZED_VOTING(1805, "You can only vote for participants enrolled in your own college.", HttpStatus.FORBIDDEN),
-    INVALID_ROLE(2003, "Invalid role specified.", HttpStatus.BAD_REQUEST),
-    TELECALLER_LIMIT_EXCEEDED(2004, "Telecaller cannot be assigned to more than 2 businesses.", HttpStatus.BAD_REQUEST),
-    DUPLICATE_MAPPING(2005, "Mapping already exists for user, business, and role.", HttpStatus.CONFLICT),
-    MAPPING_NOT_FOUND(2006, "User role mapping not found.", HttpStatus.NOT_FOUND),
 
     // ===========================
     // Address & App Info (1900–1999)
     // ===========================
-    APPINFO_NOT_FOUND(1900, "App Info Not Found With Given ID", HttpStatus.NOT_FOUND),
     ADDRESS_NOT_FOUND(1901, "Address not found.", HttpStatus.NOT_FOUND),
     INVALID_ADDRESS(1902, "Invalid address data or unauthorized access.", HttpStatus.BAD_REQUEST),
     ACCESS_DENIED(1903, "Access denied —  ownership mismatch for the given user ID.", HttpStatus.BAD_REQUEST),
@@ -46,7 +41,6 @@ public enum ErrorCode {
     NOT_FOUND(2000, "Requested Resource Not Found", HttpStatus.NOT_FOUND),
     BAD_REQUEST(2000, "Bad Request", HttpStatus.BAD_REQUEST),
     INTERNAL_SERVER_ERROR(2001, "Internal Server Error", HttpStatus.INTERNAL_SERVER_ERROR),
-    TABLE_NOT_FOUND(2001, "Table not found", HttpStatus.NOT_FOUND),
     FORBIDDEN(2002, "Forbidden", HttpStatus.FORBIDDEN),
     METHOD_NOT_ALLOWED(2003, "Method Not Allowed", HttpStatus.METHOD_NOT_ALLOWED),
     NULL_POINTER(2004, "Null Pointer Exception", HttpStatus.BAD_REQUEST),
@@ -54,10 +48,7 @@ public enum ErrorCode {
     // Product, Category, Business (3000–3099)
     // ===========================
     CATEGORY_NOT_FOUND(3001, "Category not found", HttpStatus.NOT_FOUND),
-    BUSINESS_NOT_FOUND(3002, "Business not found", HttpStatus.NOT_FOUND),
-    PRODUCT_ALREADY_EXISTS(3003, "Product already exists", HttpStatus.CONFLICT),
     ALREADY_EXISTS(3003, "Resource already exists", HttpStatus.CONFLICT),
-    RESTAURANT_NOT_APPROVED(3004, "Restaurant not approved", HttpStatus.FORBIDDEN),
     ROLE_NOT_FOUND(3004, "Role not found", HttpStatus.CONFLICT);
 
     // ===========================

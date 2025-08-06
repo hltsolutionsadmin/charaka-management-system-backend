@@ -94,7 +94,7 @@ public class UserDetailsImpl implements UserDetails {
 
     @Override
     public String getUsername() {
-        return null;
+        return getUsername();
     }
 
     public String getPrimaryContact() {

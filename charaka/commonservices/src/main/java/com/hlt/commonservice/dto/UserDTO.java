@@ -59,11 +59,6 @@ public class UserDTO {
     private String rollNumber;
     private String qualification;
 
-    private boolean skillrat;
-    private boolean yardly;
-    private boolean eato;
-    private boolean sancharalakshmi;
-    private boolean deliveryPartner;
     private String branch;
     private B2BUnitDTO b2bUnit;
     private List<MediaDTO> media;

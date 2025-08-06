@@ -16,5 +16,6 @@ refresh.sh
 .idea/
 *.iml
 
-
+ ../.idea/compiler.xml
+ ../.idea/misc.xml
 

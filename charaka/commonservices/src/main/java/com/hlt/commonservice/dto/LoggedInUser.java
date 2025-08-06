@@ -31,6 +31,8 @@ public class LoggedInUser {
 
     private int version;
 
+    private Long businessId;
+
 
 
 

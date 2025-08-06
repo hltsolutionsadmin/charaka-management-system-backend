@@ -14,7 +14,6 @@ import org.hibernate.annotations.Where;
  * - Hospital Admin ➝ Onboards Telecaller / Receptionist
  * - A user can be mapped to multiple hospitals (with 2 max check for telecaller done in service)
  */
-
 @Entity
 @Table(name = "user_business_role_mappings", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"user_id", "b2b_unit_id", "role"})
@@ -24,7 +23,7 @@ import org.hibernate.annotations.Where;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Where(clause = "active = true")
+@Where(clause = "is_active = true")
 public class UserBusinessRoleMappingModel extends AuditableModel {
 
     @Id
@@ -48,8 +47,12 @@ public class UserBusinessRoleMappingModel extends AuditableModel {
     private EMappingType mappingType;
 
     @Column(name = "is_active", nullable = false)
-    private boolean isActive;
+    private Boolean isActive;
 
-
-
+    @PrePersist
+    public void prePersist() {
+        if (isActive == null) {
+            isActive = true;
+        }
+    }
 }

@@ -5,102 +5,142 @@ import com.hlt.auth.exception.handling.HltCustomerException;
 import com.hlt.commonservice.enums.ERole;
 import com.hlt.usermanagement.dto.UserBusinessRoleMappingDTO;
 import com.hlt.usermanagement.dto.UserDTO;
-import com.hlt.usermanagement.dto.enums.EMappingType;
-import com.hlt.usermanagement.model.B2BUnitModel;
-import com.hlt.usermanagement.model.RoleModel;
-import com.hlt.usermanagement.model.UserBusinessRoleMappingModel;
-import com.hlt.usermanagement.model.UserModel;
+import com.hlt.usermanagement.model.*;
 import com.hlt.usermanagement.populator.UserBusinessRoleMappingPopulator;
-import com.hlt.usermanagement.populator.UserPopulator;
-import com.hlt.usermanagement.repository.B2BUnitRepository;
-import com.hlt.usermanagement.repository.RoleRepository;
-import com.hlt.usermanagement.repository.UserBusinessRoleMappingRepository;
-import com.hlt.usermanagement.repository.UserRepository;
+import com.hlt.usermanagement.repository.*;
 import com.hlt.usermanagement.services.UserBusinessRoleMappingService;
 import com.hlt.usermanagement.utils.PasswordUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Slf4j
 public class UserBusinessRoleMappingServiceImpl implements UserBusinessRoleMappingService {
 
-    private final UserRepository userRepository;
-    private final B2BUnitRepository b2bUnitRepository;
+    private static final int MAX_HOSPITALS_PER_TELECALLER = 2;
+
     private final UserBusinessRoleMappingRepository mappingRepository;
-    private final UserBusinessRoleMappingPopulator populator;
-    private final UserPopulator userPopulator;
+    private final UserRepository userRepository;
+    private final B2BUnitRepository b2bRepository;
     private final RoleRepository roleRepository;
+    private final UserBusinessRoleMappingPopulator populator;
 
     @Override
-    public UserBusinessRoleMappingDTO assignUserToBusinessWithUserDetails(UserDTO userDTO, Long b2bUnitId, String roleStr) {
-        // Step 1: Parse role
-        ERole role = parseRole(roleStr);
-
-        // Step 2: Fetch Business
-        B2BUnitModel b2bUnit = b2bUnitRepository.findById(b2bUnitId)
-                .orElseThrow(() -> new HltCustomerException(ErrorCode.BUSINESS_NOT_FOUND));
-
-        // Step 3: Create user
-        UserModel userFromDTO = createUserFromDTO(userDTO);
-
-        // Step 4: Check telecaller mapping limit
-        if (role == ERole.ROLE_TELECALLER) {
-            long existingMappings = mappingRepository.countByUserIdAndRoleAndIsActiveTrue(userFromDTO.getId(), ERole.ROLE_TELECALLER);
-            if (existingMappings >= 2) {
-                throw new HltCustomerException(ErrorCode.TELECALLER_MAPPING_LIMIT_EXCEEDED);
-            }
-        }
-
-        // Step 5: Create mapping
-        UserBusinessRoleMappingModel mapping = new UserBusinessRoleMappingModel();
-        mapping.setUser(userFromDTO);
-        mapping.setB2bUnit(b2bUnit);
-        mapping.setRole(role);
-        mapping.setActive(true);
-        mapping.setMappingType(getMappingTypeForRole(role));
-
+    @Transactional
+    public UserBusinessRoleMappingDTO onboardHospitalAdmin(UserBusinessRoleMappingDTO dto) {
+        UserModel user = createUserFromDTO(dto.getUserDetails(), dto.getBusinessId());
+        UserBusinessRoleMappingModel mapping = createMapping(user, ERole.ROLE_HOSPITAL_ADMIN);
         mappingRepository.save(mapping);
 
-        // Step 6: Prepare response
-
-        UserBusinessRoleMappingDTO dto = new UserBusinessRoleMappingDTO();
-        populator.populate(mapping, dto);
-        return dto;
+        UserBusinessRoleMappingDTO response = new UserBusinessRoleMappingDTO();
+        populator.populate(mapping, response);
+        return response;
     }
-
 
     @Override
-    public void deactivateMapping(Long mappingId) {
-        UserBusinessRoleMappingModel model = mappingRepository.findById(mappingId)
-                .orElseThrow(() -> new HltCustomerException(ErrorCode.MAPPING_NOT_FOUND));
-        model.setActive(false);
-        mappingRepository.save(model);
+    @Transactional
+    public void onboardDoctor(UserBusinessRoleMappingDTO dto) {
+        UserModel user = fetchOrCreateUser(dto);
+        validateDuplicateMapping(user.getId(), dto.getBusinessId(), ERole.ROLE_DOCTOR);
+        mappingRepository.save(createMapping(user, ERole.ROLE_DOCTOR));
     }
 
-    private ERole parseRole(String roleStr) {
-        try {
-            return ERole.valueOf(roleStr.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            throw new HltCustomerException(ErrorCode.INVALID_ROLE);
+    @Override
+    @Transactional
+    public void onboardReceptionist(UserBusinessRoleMappingDTO dto) {
+        UserModel user = fetchOrCreateUser(dto);
+        mappingRepository.save(createMapping(user, ERole.ROLE_RECEPTIONIST));
+    }
+
+    @Override
+    @Transactional
+    public void assignTelecallerToHospital(Long telecallerId, Long hospitalId) {
+        UserModel user;
+
+        if (telecallerId != null) {
+            user = getUserOrThrow(telecallerId);
+        } else {
+            throw new HltCustomerException(ErrorCode.NOT_FOUND, "Telecaller ID is required for assignment");
+        }
+
+        if (mappingRepository.countByUserIdAndRoleAndIsActiveTrue(user.getId(), ERole.ROLE_TELECALLER) >= MAX_HOSPITALS_PER_TELECALLER) {
+            throw new HltCustomerException(ErrorCode.INVALID_ROLE_FOR_OPERATION, "Telecaller is already assigned to 2 hospitals");
+        }
+
+        if (mappingRepository.existsByUserIdAndB2BUnitIdAndRoleAndIsActiveTrue(user.getId(), hospitalId, ERole.ROLE_TELECALLER)) {
+            throw new HltCustomerException(ErrorCode.ALREADY_EXISTS, "Telecaller already assigned to this hospital");
+        }
+
+        user.setB2bUnit(b2bRepository.findById(hospitalId)
+                .orElseThrow(() -> new HltCustomerException(ErrorCode.BUSINESS_NOT_FOUND)));
+
+        mappingRepository.save(createMapping(user, ERole.ROLE_TELECALLER));
+    }
+
+    @Override
+    public List<UserDTO> getAssignableTelecallersForHospital(Long hospitalId) {
+        // TODO: Implement in UserRepository: findTelecallersWithLessThan2Hospitals
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    @Override
+    public List<UserDTO> getDoctorsByHospital(Long hospitalId) {
+        return getUsersByRoleAndHospital(hospitalId, ERole.ROLE_DOCTOR);
+    }
+
+    @Override
+    public List<UserDTO> getReceptionistsByHospital(Long hospitalId) {
+        return getUsersByRoleAndHospital(hospitalId, ERole.ROLE_RECEPTIONIST);
+    }
+
+    // ---------- PRIVATE HELPERS ----------
+
+    private UserModel getUserOrThrow(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new HltCustomerException(ErrorCode.NOT_FOUND, "User not found"));
+    }
+
+    private void validateDuplicateMapping(Long userId, Long hospitalId, ERole role) {
+        if (mappingRepository.existsByUserIdAndB2BUnitIdAndRole(userId, hospitalId, role)) {
+            throw new HltCustomerException(ErrorCode.ALREADY_EXISTS, role.name() + " already mapped to this hospital");
         }
     }
 
-    private EMappingType getMappingTypeForRole(ERole role) {
-        return switch (role) {
-            case ROLE_TELECALLER -> EMappingType.TELECALLER;
-            case ROLE_HOSPITAL_ADMIN -> EMappingType.HOSPITAL_ADMIN;
-            case ROLE_DOCTOR -> EMappingType.DOCTOR;
-            default -> throw new HltCustomerException(ErrorCode.UNSUPPORTED_MAPPING_TYPE);
-        };
+    private UserBusinessRoleMappingModel createMapping(UserModel user, ERole role) {
+        return UserBusinessRoleMappingModel.builder()
+                .user(user)
+                .b2bUnit(user.getB2bUnit())
+                .role(role)
+                .isActive(true)
+                .build();
     }
 
-    private UserModel createUserFromDTO(UserDTO dto) {
+    private List<UserDTO> getUsersByRoleAndHospital(Long hospitalId, ERole role) {
+//        return mappingRepository.findByB2BUnitIdAndRole(hospitalId, role)
+//                .stream()
+//                .map(this::toUserDTO)
+//                .collect(Collectors.toList());
+        return null;
+    }
+
+    private UserModel fetchOrCreateUser(UserBusinessRoleMappingDTO dto) {
+        UserDTO userDTO = dto.getUserDetails();
+        Long userId = userDTO.getId();
+
+        if (userId != null) {
+            return getUserOrThrow(userId);
+        }
+
+        return createUserFromDTO(userDTO, dto.getBusinessId());
+    }
+
+    private UserModel createUserFromDTO(UserDTO dto, Long businessId) {
         UserModel user = new UserModel();
         user.setFullName(dto.getFullName());
         user.setUsername(dto.getUsername());
@@ -113,10 +153,27 @@ public class UserBusinessRoleMappingServiceImpl implements UserBusinessRoleMappi
                 .orElseThrow(() -> new HltCustomerException(ErrorCode.ROLE_NOT_FOUND));
 
         user.setRoleModels(Set.of(defaultRole));
+
         String plainPassword = PasswordUtil.generateRandomPassword(8);
         user.setPassword(plainPassword);
-        //TODO :Send mail
+
+        user.setB2bUnit(b2bRepository.findById(businessId)
+                .orElseThrow(() -> new HltCustomerException(ErrorCode.BUSINESS_NOT_FOUND)));
+
+        UserModel savedUser = userRepository.save(user);
+
+        // TODO: Email credentials securely to user
         // emailService.sendUserCredentials(user.getEmail(), user.getUsername(), plainPassword);
-        return userRepository.save(user);
+
+        return savedUser;
+    }
+
+    private UserDTO toUserDTO(UserModel user) {
+        return UserDTO.builder()
+                .id(user.getId())
+                .fullName(user.getFullName())
+                .primaryContact(user.getPrimaryContact())
+                .email(user.getEmail())
+                .build();
     }
 }
