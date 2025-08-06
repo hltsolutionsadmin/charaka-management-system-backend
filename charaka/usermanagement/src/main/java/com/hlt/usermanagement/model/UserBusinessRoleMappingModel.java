@@ -1,7 +1,6 @@
 package com.hlt.usermanagement.model;
 
 import com.hlt.commonservice.enums.ERole;
-import com.hlt.usermanagement.dto.enums.EMappingType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.Where;
@@ -35,7 +34,7 @@ public class UserBusinessRoleMappingModel extends AuditableModel {
     private UserModel user;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "b2b_unit_id", nullable = false)
+    @JoinColumn(name = "b2b_unit_id")
     private B2BUnitModel b2bUnit;
 
     @Enumerated(EnumType.STRING)

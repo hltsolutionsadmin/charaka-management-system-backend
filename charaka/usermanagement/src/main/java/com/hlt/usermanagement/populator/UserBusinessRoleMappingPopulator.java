@@ -28,6 +28,7 @@ public class UserBusinessRoleMappingPopulator {
             UserDTO userDTO = new UserDTO();
             userPopulator.populate(source.getUser(), userDTO);
             target.setUserDetails(userDTO);
+
         }
     }
 
