@@ -21,8 +21,6 @@ public class B2BUnitDTO {
 
 	private String contactNumber;
 
-	private boolean approved;
-
 	private boolean enabled;
 
 	private Double businessLatitude;
@@ -43,8 +41,4 @@ public class B2BUnitDTO {
 	private List<String> mediaUrls;
 	private List<MediaDTO> mediaList;
 
-
-	public String getStatus() {
-		return Boolean.TRUE.equals(enabled) ? "ENABLED" : "DISABLED";
-	}
 }
