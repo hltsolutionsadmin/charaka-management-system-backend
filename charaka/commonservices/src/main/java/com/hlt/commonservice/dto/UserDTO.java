@@ -44,7 +44,6 @@ public class UserDTO {
     private String type;
 
     private boolean isRegistered;
-    private List<SchemeInfoDTO> schemeInfoList;
 
     private Long userRegistrationId;
 
@@ -59,12 +58,8 @@ public class UserDTO {
     private String rollNumber;
     private String qualification;
 
-    private String branch;
     private B2BUnitDTO b2bUnit;
     private List<MediaDTO> media;
-    private UserVerificationStatus userVerificationStatus;
-    private Integer studentStartYear;
-    private Integer studentEndYear;
-    private Long currentYear;
+
     private String password;
 }

@@ -13,11 +13,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableFeignClients
 @ComponentScan(basePackages = {"com.hlt.healthcare", "com.hlt.auth"})
 public class HealthCareServices {
-    /**
-     * Main method to run the HealthCareServices application.
-     *
-     * @param args command line arguments
-     */
+
     public static void main(String[] args) {
         SpringApplication.run(HealthCareServices.class, args);
     }

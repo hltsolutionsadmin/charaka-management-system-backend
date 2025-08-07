@@ -44,6 +44,7 @@ public interface UserService {
 
     Optional<UserModel> findByPrimaryContact(String primaryContact);
 
+    Optional<UserDTO> findDtoByPrimaryContact(String primaryContact);
 
     Boolean existsByEmail(final String email, final Long userId);
 

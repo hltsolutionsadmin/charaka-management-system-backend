@@ -9,6 +9,6 @@ import org.springframework.context.annotation.Configuration;
 public class FeignConfig {
     @Bean
     public FeignClientInterceptor customFeignClientInterceptor() {
-        return new  FeignClientInterceptor();
+        return new FeignClientInterceptor();
     }
 }

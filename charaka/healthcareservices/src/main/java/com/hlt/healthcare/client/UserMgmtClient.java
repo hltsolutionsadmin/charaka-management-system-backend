@@ -1,51 +1,45 @@
 package com.hlt.healthcare.client;
 
+
 import com.hlt.commonservice.dto.*;
 import com.hlt.commonservice.enums.ERole;
 import jakarta.validation.Valid;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@FeignClient(name = "userMgmtService")
+@FeignClient(name = "usermanagement")
 public interface UserMgmtClient {
 
-    @GetMapping("/api/usermgmt/api/addresses/{addressId}")
-    AddressDTO getAddressById(@PathVariable("addressId") Long id);
+    @GetMapping("api/usermanagement/by-contact/{contact}")
+    UserDTO getUserByPrimaryContact(@Valid @RequestParam("primaryContact") String primaryContact);
 
-    @GetMapping("/api/usermgmt/user/count/business/{businessId}")
-    ResponseEntity<StandardResponse<Long>> getUserCountByBusinessId(@PathVariable("businessId") Long businessId);
-
-    @GetMapping("/api/usermgmt/business/{id}")
+    @GetMapping("/api/usermanagement/business/{id}")
     B2BUnitDTO getBusinessById(@PathVariable("id") Long id);
 
-    @GetMapping("/api/usermgmt/role/find/{erole}")
+    @GetMapping("/api/usermanagement/role/find/{erole}")
     Role getByERole(@PathVariable("erole") ERole eRole);
 
-    @PostMapping("/api/usermgmt/user/save")
+    @PostMapping("/api/usermanagement/user/save")
     UserDTO saveUser(@RequestBody UserDTO user);
 
-    @GetMapping("/api/usermgmt/user/find/{userId}")
+    @GetMapping("/api/usermanagement/user/find/{userId}")
     UserDTO getUserById(@PathVariable("userId") Long userId);
 
-    @PostMapping("/api/usermgmt/user/details/all")
+    @PostMapping("/api/usermanagement/user/details/all")
     List<UserDTO> getUserDetailsByIds(@RequestBody List<Long> userIds);
 
-    @PutMapping("/api/usermgmt/user/user/{userId}/role/{role}")
+    @PutMapping("/api/usermanagement/user/user/{userId}/role/{role}")
     void addRole(@PathVariable("userId") Long userId, @PathVariable("role") ERole eRole);
 
-    @GetMapping("/api/usermgmt/user/contact")
+    @GetMapping("/api/usermanagement/user/contact")
     LoggedInUser getByPrimaryContact(@Valid @RequestParam("primaryContact") String primaryContact);
 
-    @PostMapping("/api/usermgmt/user/onboard/user")
+    @PostMapping("/api/usermanagement/user/onboard/user")
     Long onBoardUser(@Valid @RequestBody BasicOnboardUserDTO basicOnboardUserDTO);
 
-    @DeleteMapping("/api/usermgmt/user/contact/{mobileNumber}/role/{role}")
+    @DeleteMapping("/api/usermanagement/user/contact/{mobileNumber}/role/{role}")
     void removeUserRole(@PathVariable("mobileNumber") String mobileNumber, @PathVariable("role") ERole userRole);
 
-
-
 }
-
