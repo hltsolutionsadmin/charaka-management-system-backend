@@ -195,16 +195,13 @@ public class UserBusinessRoleMappingServiceImpl implements UserBusinessRoleMappi
         user.setPrimaryContact(dto.getPrimaryContact());
         user.setGender(dto.getGender());
 
-        // Assign default ROLE_USER first
         RoleModel defaultRole = roleRepository.findByName(ERole.ROLE_USER)
                 .orElseThrow(() -> new HltCustomerException(ErrorCode.ROLE_NOT_FOUND));
         user.setRoleModels(Set.of(defaultRole));
 
-        // Generate random password
         String plainPassword = PasswordUtil.generateRandomPassword(8);
         user.setPassword(plainPassword);
 
-        // Fetch business entity & set it
         B2BUnitModel business = b2bRepository.findById(businessId)
                 .orElseThrow(() -> new HltCustomerException(ErrorCode.BUSINESS_NOT_FOUND));
         user.setB2bUnit(business);
@@ -216,23 +213,22 @@ public class UserBusinessRoleMappingServiceImpl implements UserBusinessRoleMappi
             throw new HltCustomerException(ErrorCode.USER_ALREADY_EXISTS, "User with this email or contact already exists");
         }
 
-        // Extract business name for email
-        String businessName = business.getBusinessName();
-
-        // Extract roles for email
-        Set<String> roles = savedUser.getRoleModels()
+        // Email credentials using the generic method
+        Map<String, Object> emailContext = new HashMap<>();
+        emailContext.put("username", savedUser.getUsername());
+        emailContext.put("password", plainPassword);
+        emailContext.put("businessName", business.getBusinessName());
+        emailContext.put("roles", savedUser.getRoleModels()
                 .stream()
                 .map(RoleModel::getName)
                 .map(Enum::name)
-                .collect(Collectors.toSet());
+                .collect(Collectors.toSet()));
 
-        // Email credentials securely
-        emailService.sendUserCredentials(
+        emailService.sendEmail(
                 savedUser.getEmail(),
-                savedUser.getUsername(),
-                plainPassword,
-                businessName,
-                roles
+                "Your Account Credentials",
+                "user-credentials.html",
+                emailContext
         );
 
         return savedUser;

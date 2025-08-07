@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 
+import java.util.Map;
 import java.util.Set;
 
 @Service
@@ -36,6 +37,24 @@ public class EmailServiceImpl implements EmailService {
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
             helper.setTo(to);
             helper.setSubject("Your Account Credentials");
+            helper.setText(body, true);
+        };
+
+        mailSender.send(message);
+    }
+
+    @Async
+    @Override
+    public void sendEmail(String to, String subject, String templateName, Map<String, Object> contextVariables) {
+        Context context = new Context();
+        contextVariables.forEach(context::setVariable);
+
+        String body = templateEngine.process(templateName, context);
+
+        MimeMessagePreparator message = mimeMessage -> {
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
+            helper.setTo(to);
+            helper.setSubject(subject);
             helper.setText(body, true);
         };
 

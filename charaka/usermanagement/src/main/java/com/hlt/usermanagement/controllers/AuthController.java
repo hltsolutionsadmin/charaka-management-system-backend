@@ -9,6 +9,8 @@ import com.hlt.auth.exception.handling.HltCustomerException;
 import com.hlt.commonservice.dto.LoggedInUser;
 import com.hlt.commonservice.dto.StandardResponse;
 import com.hlt.commonservice.enums.ERole;
+import com.hlt.usermanagement.dto.ForgotPasswordDTO;
+import com.hlt.usermanagement.dto.ResetPasswordDTO;
 import com.hlt.usermanagement.dto.request.LoginRequest;
 import com.hlt.usermanagement.dto.request.RefreshTokenRequest;
 import com.hlt.usermanagement.dto.request.UsernameLoginRequest;
