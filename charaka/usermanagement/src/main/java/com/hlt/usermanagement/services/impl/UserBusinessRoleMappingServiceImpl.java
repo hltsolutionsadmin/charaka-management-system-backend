@@ -38,9 +38,8 @@ public class UserBusinessRoleMappingServiceImpl implements UserBusinessRoleMappi
     private final B2BUnitRepository b2bRepository;
     private final RoleRepository roleRepository;
     private final UserBusinessRoleMappingPopulator populator;
-    private final UserPopulator userPopulator;
     @Autowired
-    private EmailService emailService; // ✅ Correct
+    private EmailService emailService;
 
 
     @Override
@@ -54,19 +53,21 @@ public class UserBusinessRoleMappingServiceImpl implements UserBusinessRoleMappi
         UserModel user = createUserFromDTO(dto.getUserDetails(), businessId);
         assignRolesToUser(user, ERole.ROLE_HOSPITAL_ADMIN);
         userRepository.save(user);
-        sendOnboardingEmail(user,user.getPassword());
+        sendOnboardingEmail(user.getEmail(),user.getFullName(),user.getPassword(), ERole.ROLE_HOSPITAL_ADMIN);
         UserBusinessRoleMappingModel mapping = saveMapping(user, ERole.ROLE_HOSPITAL_ADMIN);
         return populateResponse(mapping);
     }
 
     @Transactional
-    private void sendOnboardingEmail(UserModel user, String password) {
+    private void sendOnboardingEmail(String sendmail, String fullName,String password, ERole role) {
+        String subject = getSubjectForRole(role);
+
         MailRequestDTO mail = MailRequestDTO.builder()
-                .to(user.getEmail())
-                .subject("Welcome to Charaka - Hospital Admin Access")
+                .to(sendmail)
+                .subject(subject)
                 .type(EmailType.PASSWORD_GENERATION)
                 .variables(Map.of(
-                        "name", user.getFullName(),
+                        "name", fullName,
                         "password", password
                 ))
                 .build();
@@ -75,10 +76,27 @@ public class UserBusinessRoleMappingServiceImpl implements UserBusinessRoleMappi
     }
 
 
+    private String getSubjectForRole(ERole role) {
+        return switch (role) {
+            case ROLE_HOSPITAL_ADMIN -> "Welcome to Charaka - Hospital Admin Access";
+            case ROLE_DOCTOR -> "Welcome to Charaka - Doctor Access";
+            case ROLE_RECEPTIONIST -> "Welcome to Charaka - Receptionist Access";
+            case ROLE_TELECALLER -> "Welcome to Charaka - Telecaller Access";
+            default -> "Welcome to Charaka - Account Access";
+        };
+    }
+
+
+
     @Override
     @Transactional
     public UserBusinessRoleMappingDTO onboardDoctor(UserBusinessRoleMappingDTO dto) {
+        sendOnboardingEmail(dto.getUserDetails().getEmail(),
+                dto.getUserDetails().getFullName(),
+                dto.getUserDetails().getPassword(),
+                ERole.ROLE_DOCTOR);
         return onboardGenericRole(dto, ERole.ROLE_DOCTOR);
+
     }
 
     @Override
@@ -92,7 +110,10 @@ public class UserBusinessRoleMappingServiceImpl implements UserBusinessRoleMappi
         UserModel user = createUserWithoutBusiness(userDTO);
         assignRolesToUser(user, ERole.ROLE_TELECALLER);
         userRepository.save(user);
-
+        sendOnboardingEmail(dto.getUserDetails().getEmail(),
+                dto.getUserDetails().getFullName(),
+                dto.getUserDetails().getPassword(),
+                ERole.ROLE_TELECALLER);
         UserBusinessRoleMappingModel mapping = saveMapping(user, ERole.ROLE_TELECALLER);
         return populateResponse(mapping);
     }
@@ -100,6 +121,10 @@ public class UserBusinessRoleMappingServiceImpl implements UserBusinessRoleMappi
     @Override
     @Transactional
     public UserBusinessRoleMappingDTO onboardReceptionist(UserBusinessRoleMappingDTO dto) {
+        sendOnboardingEmail(dto.getUserDetails().getEmail(),
+                dto.getUserDetails().getFullName(),
+                dto.getUserDetails().getPassword(),
+                ERole.ROLE_RECEPTIONIST);
         return onboardGenericRole(dto, ERole.ROLE_RECEPTIONIST);
     }
 
