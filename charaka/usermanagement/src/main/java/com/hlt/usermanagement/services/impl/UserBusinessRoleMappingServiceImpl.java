@@ -191,6 +191,7 @@ public class UserBusinessRoleMappingServiceImpl implements UserBusinessRoleMappi
         user.setUsername(dto.getUsername());
         user.setEmail(dto.getEmail());
         user.setPrimaryContact(dto.getPrimaryContact());
+        user.setPassword(generateRandomPassword(8));
         user.setGender(dto.getGender());
         return user;
     }
