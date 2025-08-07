@@ -3,16 +3,20 @@ package com.hlt.usermanagement.services.impl;
 import com.hlt.auth.exception.handling.ErrorCode;
 import com.hlt.auth.exception.handling.HltCustomerException;
 import com.hlt.commonservice.enums.ERole;
+import com.hlt.usermanagement.dto.MailRequestDTO;
 import com.hlt.usermanagement.dto.UserBusinessRoleMappingDTO;
 import com.hlt.usermanagement.dto.UserDTO;
+import com.hlt.usermanagement.dto.enums.EmailType;
 import com.hlt.usermanagement.model.*;
 import com.hlt.usermanagement.populator.UserBusinessRoleMappingPopulator;
 import com.hlt.usermanagement.populator.UserPopulator;
 import com.hlt.usermanagement.repository.*;
+import com.hlt.usermanagement.services.EmailService;
 import com.hlt.usermanagement.services.UserBusinessRoleMappingService;
 import com.hlt.usermanagement.services.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,6 +39,9 @@ public class UserBusinessRoleMappingServiceImpl implements UserBusinessRoleMappi
     private final RoleRepository roleRepository;
     private final UserBusinessRoleMappingPopulator populator;
     private final UserPopulator userPopulator;
+    @Autowired
+    private EmailService emailService; // ✅ Correct
+
 
     @Override
     @Transactional
@@ -47,10 +54,26 @@ public class UserBusinessRoleMappingServiceImpl implements UserBusinessRoleMappi
         UserModel user = createUserFromDTO(dto.getUserDetails(), businessId);
         assignRolesToUser(user, ERole.ROLE_HOSPITAL_ADMIN);
         userRepository.save(user);
-
+        sendOnboardingEmail(user,user.getPassword());
         UserBusinessRoleMappingModel mapping = saveMapping(user, ERole.ROLE_HOSPITAL_ADMIN);
         return populateResponse(mapping);
     }
+
+    @Transactional
+    private void sendOnboardingEmail(UserModel user, String password) {
+        MailRequestDTO mail = MailRequestDTO.builder()
+                .to(user.getEmail())
+                .subject("Welcome to Charaka - Hospital Admin Access")
+                .type(EmailType.PASSWORD_GENERATION)
+                .variables(Map.of(
+                        "name", user.getFullName(),
+                        "password", password
+                ))
+                .build();
+
+        emailService.sendMail(mail);
+    }
+
 
     @Override
     @Transactional
@@ -156,7 +179,7 @@ public class UserBusinessRoleMappingServiceImpl implements UserBusinessRoleMappi
     private void assignRolesToUser(UserModel user, ERole role) {
         RoleModel roleModel = roleRepository.findByName(role)
                 .orElseThrow(() -> new HltCustomerException(ErrorCode.ROLE_NOT_FOUND));
-        user.setRoleModels(Set.of(roleModel));
+        user.setRoleModels(new HashSet<>(Collections.singleton(roleModel)));
     }
 
     private UserModel fetchOrCreateUser(UserBusinessRoleMappingDTO dto) {
