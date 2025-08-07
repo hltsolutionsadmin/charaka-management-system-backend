@@ -170,8 +170,13 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
     @Override
     public Optional<UserModel> findByPrimaryContact(String primaryContact) {
         return userRepository.findByPrimaryContactHash(DigestUtils.sha256Hex(primaryContact));
-
     }
+    @Override
+    public Optional<UserDTO> findDtoByPrimaryContact(String primaryContact) {
+        return userRepository.findByPrimaryContact(primaryContact)
+                .map(this::convertToUserDto);
+    }
+
 
 
     @Override

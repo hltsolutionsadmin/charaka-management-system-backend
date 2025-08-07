@@ -1,6 +1,7 @@
 package com.hlt.healthcare.client;
 
 
+
 import com.hlt.auth.UserServiceAdapter;
 import com.hlt.commonservice.dto.UserDTO;
 import org.springframework.beans.factory.annotation.Autowired;
