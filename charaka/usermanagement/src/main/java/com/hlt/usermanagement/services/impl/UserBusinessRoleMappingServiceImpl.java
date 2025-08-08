@@ -7,17 +7,24 @@ import com.hlt.usermanagement.dto.MailRequestDTO;
 import com.hlt.usermanagement.dto.UserBusinessRoleMappingDTO;
 import com.hlt.usermanagement.dto.UserDTO;
 import com.hlt.usermanagement.dto.enums.EmailType;
-import com.hlt.usermanagement.model.*;
+import com.hlt.usermanagement.model.RoleModel;
+import com.hlt.usermanagement.model.UserBusinessRoleMappingModel;
+import com.hlt.usermanagement.model.UserModel;
 import com.hlt.usermanagement.populator.UserBusinessRoleMappingPopulator;
-import com.hlt.usermanagement.populator.UserPopulator;
-import com.hlt.usermanagement.repository.*;
+import com.hlt.usermanagement.repository.B2BUnitRepository;
+import com.hlt.usermanagement.repository.RoleRepository;
+import com.hlt.usermanagement.repository.UserBusinessRoleMappingRepository;
+import com.hlt.usermanagement.repository.UserRepository;
 import com.hlt.usermanagement.services.EmailService;
 import com.hlt.usermanagement.services.UserBusinessRoleMappingService;
 import com.hlt.usermanagement.services.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -53,28 +60,28 @@ public class UserBusinessRoleMappingServiceImpl implements UserBusinessRoleMappi
         UserModel user = createUserFromDTO(dto.getUserDetails(), businessId);
         assignRolesToUser(user, ERole.ROLE_HOSPITAL_ADMIN);
         userRepository.save(user);
-        sendOnboardingEmail(user.getEmail(),user.getFullName(),user.getPassword(), ERole.ROLE_HOSPITAL_ADMIN);
+        sendOnboardingEmail(user.getEmail(),user.getUsername() ,user.getFullName(),user.getPassword(), ERole.ROLE_HOSPITAL_ADMIN);
         UserBusinessRoleMappingModel mapping = saveMapping(user, ERole.ROLE_HOSPITAL_ADMIN);
         return populateResponse(mapping);
     }
-
     @Transactional
-    private void sendOnboardingEmail(String sendmail, String fullName,String password, ERole role) {
+    private void sendOnboardingEmail(String email, String username, String fullName, String password, ERole role) {
         String subject = getSubjectForRole(role);
+        EmailType emailType = getEmailTypeForRole(role);
 
         MailRequestDTO mail = MailRequestDTO.builder()
-                .to(sendmail)
+                .to(email)
                 .subject(subject)
-                .type(EmailType.PASSWORD_GENERATION)
+                .type(emailType)
                 .variables(Map.of(
                         "name", fullName,
+                        "username", username,
                         "password", password
                 ))
                 .build();
 
         emailService.sendMail(mail);
     }
-
 
     private String getSubjectForRole(ERole role) {
         return switch (role) {
@@ -86,12 +93,23 @@ public class UserBusinessRoleMappingServiceImpl implements UserBusinessRoleMappi
         };
     }
 
+    private EmailType getEmailTypeForRole(ERole role) {
+        return switch (role) {
+            case ROLE_HOSPITAL_ADMIN -> EmailType.HOSPITAL_ADMIN_ONBOARD;
+            case ROLE_DOCTOR -> EmailType.DOCTOR_ONBOARD;
+            case ROLE_RECEPTIONIST -> EmailType.RECEPTIONIST_ACCESS;
+            case ROLE_TELECALLER -> EmailType.TELECALLER_ACCESS;
+            default -> throw new IllegalArgumentException("No EmailType mapping for role: " + role);
+        };
+    }
+
 
 
     @Override
     @Transactional
     public UserBusinessRoleMappingDTO onboardDoctor(UserBusinessRoleMappingDTO dto) {
         sendOnboardingEmail(dto.getUserDetails().getEmail(),
+                dto.getUserDetails().getUsername(),
                 dto.getUserDetails().getFullName(),
                 dto.getUserDetails().getPassword(),
                 ERole.ROLE_DOCTOR);
@@ -111,6 +129,7 @@ public class UserBusinessRoleMappingServiceImpl implements UserBusinessRoleMappi
         assignRolesToUser(user, ERole.ROLE_TELECALLER);
         userRepository.save(user);
         sendOnboardingEmail(dto.getUserDetails().getEmail(),
+                dto.getUserDetails().getUsername(),
                 dto.getUserDetails().getFullName(),
                 dto.getUserDetails().getPassword(),
                 ERole.ROLE_TELECALLER);
@@ -122,6 +141,7 @@ public class UserBusinessRoleMappingServiceImpl implements UserBusinessRoleMappi
     @Transactional
     public UserBusinessRoleMappingDTO onboardReceptionist(UserBusinessRoleMappingDTO dto) {
         sendOnboardingEmail(dto.getUserDetails().getEmail(),
+                dto.getUserDetails().getUsername(),
                 dto.getUserDetails().getFullName(),
                 dto.getUserDetails().getPassword(),
                 ERole.ROLE_RECEPTIONIST);
@@ -247,8 +267,13 @@ public class UserBusinessRoleMappingServiceImpl implements UserBusinessRoleMappi
     private UserBusinessRoleMappingDTO populateResponse(UserBusinessRoleMappingModel mapping) {
         UserBusinessRoleMappingDTO response = new UserBusinessRoleMappingDTO();
         populator.populate(mapping, response);
+
+        if (response.getUserDetails() != null) {
+            response.getUserDetails().setPassword(mapping.getUser().getPassword());
+        }
         return response;
     }
+
 
     private Page<UserDTO> getUsersByRoleAndHospital(Long hospitalId, ERole role, Pageable pageable) {
         return mappingRepository.findByB2bUnitIdAndRole(hospitalId, role, pageable)

@@ -16,7 +16,7 @@ public class AppointmentController {
     private final AppointmentService appointmentService;
 
     @PostMapping
-    public StandardResponse<AppointmentResponseDTO> createAppointment(@RequestBody AppointmentCreateRequest request) {
+    public StandardResponse<AppointmentResponseDTO> createAppointment(@RequestBody AppointmentResponseDTO request) {
         AppointmentResponseDTO response = appointmentService.create(request);
         return StandardResponse.single("Appointment created successfully", response);
     }

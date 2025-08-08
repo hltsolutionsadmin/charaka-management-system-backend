@@ -49,9 +49,11 @@ public class EmailServiceImpl implements EmailService {
         context.setVariables(variables);
 
         return switch (type) {
-            case WELCOME_EMAIL -> templateEngine.process("emails/welcome", context);
-            case PASSWORD_GENERATION -> templateEngine.process("emails/password-generation", context);
-            default -> templateEngine.process("emails/generic", context);
+            case HOSPITAL_ADMIN_ONBOARD -> templateEngine.process("emails/hospital-admin_onboard", context);
+            case DOCTOR_ONBOARD -> templateEngine.process("emails/doctor_onboard", context);
+            case RECEPTIONIST_ACCESS -> templateEngine.process("emails/receptionist_access", context);
+            case TELECALLER_ACCESS -> templateEngine.process("emails/telecaller_access", context);
         };
     }
+
 }

@@ -1,8 +1,8 @@
 package com.hlt.usermanagement.dto.enums;
 
 public enum EmailType {
-    WELCOME_EMAIL,
-    PASSWORD_GENERATION,
-    OTP,
-    ACCOUNT_ACTIVATION
+    HOSPITAL_ADMIN_ONBOARD,
+    DOCTOR_ONBOARD,
+    RECEPTIONIST_ACCESS,
+    TELECALLER_ACCESS,
 }

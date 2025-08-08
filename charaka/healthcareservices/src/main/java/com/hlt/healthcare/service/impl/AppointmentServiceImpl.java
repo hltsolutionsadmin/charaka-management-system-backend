@@ -5,16 +5,14 @@ import com.hlt.healthcare.client.UserMgmtClient;
 import com.hlt.healthcare.dto.AppointmentResponseDTO;
 import com.hlt.healthcare.model.AppointmentModel;
 import com.hlt.healthcare.model.EnquiryModel;
-import com.hlt.healthcare.populator.AppointmentMapper;
 import com.hlt.healthcare.repository.AppointmentRepository;
 import com.hlt.healthcare.repository.EnquiryRepository;
 import com.hlt.healthcare.service.AppointmentService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import jakarta.transaction.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -67,6 +65,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         } catch (Exception ignored) {
         }
 
-        return AppointmentMapper.toResponse(model, doctor);
+//        return AppointmentMapper.toDTO(model, doctor); //TODO
+        return null;
     }
 }

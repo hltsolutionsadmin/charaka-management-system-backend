@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>Welcome to Charaka - Doctor Access</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 0;
+            color: #333333;
+        }
+        .container {
+            background-color: #ffffff;
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 30px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+        .title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .content {
+            font-size: 15px;
+            line-height: 1.6;
+        }
+        .highlight {
+            font-weight: bold;
+            color: #000000;
+        }
+        .credentials {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 15px;
+        }
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 12px;
+            color: #888888;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="title">Welcome to Charaka – Doctor Access</div>
+    <div class="content">
+        Dear <span class="highlight">{{name}}</span>,<br /><br />
+        We are delighted to welcome you to the <strong>Charaka Healthcare Platform</strong> as a Doctor.<br />
+        Your account has been created successfully, and you can now start managing appointments and patients.
+
+        <div class="credentials">
+            <strong>Your Login Credentials:</strong><br />
+            <span class="highlight">Username:</span> {{username}}<br />
+            <span class="highlight">Password:</span> {{password}}
+        </div>
+
+        <br />
+        Please log in to your dashboard and start delivering exceptional care to patients.<br /><br />
+        If you face any issues, feel free to contact our support team.<br /><br />
+
+        Best regards,<br />
+        <strong>Charaka Onboarding Team</strong>
+    </div>
+    <div class="footer">
+        &copy; 2025 Charaka Healthcare Platform. Powered by Juvarya.
+    </div>
+</div>
+</body>
+</html>
