@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
+
 @Entity
 @Table(name = "user_address")
 @Getter
@@ -35,10 +37,10 @@ public class AddressModel {
     private String postalCode;
 
     @Column(name = "latitude")
-    private Double latitude;
+    private BigDecimal latitude;
 
     @Column(name = "longitude")
-    private Double longitude;
+    private BigDecimal longitude;
 
     @Column(name = "is_default")
     private Boolean isDefault;

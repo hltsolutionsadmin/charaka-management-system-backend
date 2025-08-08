@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Charaka | Welcome Onboard</title>
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: Arial, sans-serif;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .email-wrapper {
+            max-width: 650px;
+            margin: 40px auto;
+            background-color: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            padding: 40px 30px;
+            text-align: left;
+        }
+        h1 {
+            color: #007bff;
+            font-size: 24px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .subheading {
+            color: #555;
+            font-size: 16px;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+        p {
+            font-size: 15px;
+            line-height: 1.6;
+            margin: 15px 0;
+        }
+        .info-box {
+            background-color: #f1f3f5;
+            color: #000;
+            font-weight: bold;
+            padding: 10px 16px;
+            font-size: 16px;
+            border-radius: 6px;
+            margin: 10px 0;
+            border: 1px dashed #007bff;
+            display: inline-block;
+        }
+        .footer {
+            margin-top: 35px;
+            font-size: 12px;
+            color: #888;
+            text-align: center;
+            border-top: 1px solid #eaeaea;
+            padding-top: 15px;
+        }
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+<div class="email-wrapper">
+    <!-- Heading -->
+    <h1>Welcome Onboard</h1>
+    <div class="subheading">Your Hospital Admin Access is Ready</div>
+
+    <!-- Main Content -->
+    <p>Dear <strong th:text="${name}">Administrator</strong>,</p>
+    <p>We are pleased to inform you that you have been successfully onboarded as a
+        <strong>Hospital Admin</strong> in the <strong>Charaka HealthTech Platform</strong>.
+    </p>
+
+    <p>Here are your login details:</p>
+    <p>Username:</p>
+    <div class="info-box" th:text="${username}">admin@charaka.com</div>
+
+    <p>Temporary Password:</p>
+    <div class="info-box" th:text="${password}">ABC12345</div>
+
+    <p>For security, please log in and change your password immediately.
+        Do not share these credentials with anyone.</p>
+
+    <p>If you have any questions or face any issues, please contact our support team at
+        <a href="mailto:support@charakahealthtech.com">support@charakahealthtech.com</a>.
+    </p>
+
+    <!-- Footer -->
+    <div class="footer">
+        © 2025 Charaka HealthTech • Empowering Healthcare Digitally
+    </div>
+</div>
+</body>
+</html>

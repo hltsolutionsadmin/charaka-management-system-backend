@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>Welcome to Charaka - Telecaller Access</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 0;
+            color: #333333;
+        }
+        .container {
+            background-color: #ffffff;
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 30px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+        .title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .content {
+            font-size: 15px;
+            line-height: 1.6;
+        }
+        .highlight {
+            font-weight: bold;
+            color: #000000;
+        }
+        .credentials {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 15px;
+        }
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 12px;
+            color: #888888;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="title">Welcome to Charaka – Telecaller Access</div>
+    <div class="content">
+        Dear <span class="highlight">{{name}}</span>,<br /><br />
+        We are pleased to inform you that you have been successfully onboarded as a
+        <strong>Telecaller</strong> on the Charaka Healthcare Platform.
+
+        <div class="credentials">
+            <strong>Your Login Credentials:</strong><br />
+            <span class="highlight">Username:</span> {{username}}<br />
+            <span class="highlight">Password:</span> {{password}}
+        </div>
+
+        <br />
+        You can now start engaging with patients, managing follow-ups, and supporting healthcare communication for your assigned hospitals.<br /><br />
+
+        Best regards,<br />
+        <strong>Charaka Onboarding Team</strong>
+    </div>
+    <div class="footer">
+        &copy; 2025 Charaka Healthcare System. Powered by Juvarya.
+    </div>
+</div>
+</body>
+</html>

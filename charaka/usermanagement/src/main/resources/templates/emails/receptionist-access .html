@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>Welcome to Charaka - Receptionist Access</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            background-color: #ffffff;
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 40px 30px;
+            border-radius: 8px;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
+        }
+        .logo {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        .title {
+            font-size: 22px;
+            font-weight: bold;
+            color: #007bff;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            font-size: 14px;
+            color: #555;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        .content {
+            font-size: 15px;
+            color: #444;
+            line-height: 1.6;
+        }
+        .highlight {
+            font-weight: bold;
+            color: #000;
+        }
+        .info-box {
+            background-color: #f1f3f5;
+            padding: 10px 16px;
+            margin: 8px 0;
+            border-radius: 6px;
+            border: 1px dashed #007bff;
+            font-size: 15px;
+            font-weight: bold;
+        }
+        .footer {
+            margin-top: 35px;
+            text-align: center;
+            font-size: 12px;
+            color: #888;
+            border-top: 1px solid #eaeaea;
+            padding-top: 15px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- Logo -->
+    <div class="logo">
+        <img src="https://yourdomain.com/assets/charaka-logo.png" alt="Charaka Logo" width="110" />
+    </div>
+
+    <!-- Title -->
+    <div class="title">Welcome to Charaka</div>
+    <div class="subtitle">Receptionist Access Granted</div>
+
+    <!-- Content -->
+    <div class="content">
+        Dear <span class="highlight">{{name}}</span>,<br><br>
+        Congratulations! You’ve been successfully onboarded as a <strong>Receptionist</strong> in the
+        <strong>Charaka Healthcare System</strong>.<br><br>
+
+        <strong>Your Login Credentials:</strong><br>
+        <div class="info-box">Username: {{username}}</div>
+        <div class="info-box">Password: {{password}}</div>
+
+        Please log in and change your password immediately for security purposes.<br><br>
+        As a Receptionist, you’ll manage appointments, greet patients, and support doctors and telecallers in daily operations.<br><br>
+
+        Welcome to the team!<br>
+        <strong>Charaka Operations Team</strong>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        &copy; 2025 Charaka Healthcare System • Powered by Juvarya
+    </div>
+</div>
+</body>
+</html>
