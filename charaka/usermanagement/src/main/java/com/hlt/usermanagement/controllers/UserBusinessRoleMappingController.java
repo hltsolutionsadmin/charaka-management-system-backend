@@ -7,6 +7,7 @@ import com.hlt.commonservice.enums.ERole;
 import com.hlt.commonservice.user.UserDetailsImpl;
 import com.hlt.usermanagement.dto.UserBusinessRoleMappingDTO;
 import com.hlt.usermanagement.dto.UserDTO;
+import com.hlt.usermanagement.model.B2BUnitModel;
 import com.hlt.usermanagement.model.UserModel;
 import com.hlt.usermanagement.repository.UserRepository;
 import com.hlt.usermanagement.services.UserBusinessRoleMappingService;
@@ -19,6 +20,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/mappings")
@@ -126,11 +129,10 @@ public class UserBusinessRoleMappingController {
             throw new HltCustomerException(ErrorCode.UNAUTHORIZED);
         }
 
-        if (user.getB2bUnit() == null) {
+        if (user.getBusinesses() == null) {
             throw new HltCustomerException(ErrorCode.BUSINESS_NOT_FOUND);
         }
     }
-
     private void enforceBusinessScope(UserModel currentUser, UserBusinessRoleMappingDTO dto) {
         boolean isSuperAdmin = currentUser.getRoleModels().stream()
                 .anyMatch(role -> role.getName() == ERole.ROLE_SUPER_ADMIN);
@@ -143,7 +145,20 @@ public class UserBusinessRoleMappingController {
         }
 
         validateHospitalAdminAccess(currentUser);
-        dto.setBusinessId(currentUser.getB2bUnit().getId());
+
+        // Assuming currentUser.getBusinesses() returns a Set<B2BUnitModel>
+        Set<B2BUnitModel> businesses = currentUser.getBusinesses();
+        if (businesses == null || businesses.isEmpty()) {
+            throw new HltCustomerException(ErrorCode.BUSINESS_NOT_FOUND, "User does not have an associated business");
+        }
+
+        if (businesses.size() > 1) {
+            throw new HltCustomerException(ErrorCode.BAD_REQUEST, "User associated with multiple businesses, specify businessId explicitly");
+        }
+
+        // Only one business present - set its ID in the DTO
+        Long businessId = businesses.iterator().next().getId();
+        dto.setBusinessId(businessId);
     }
 
     private Long getBusinessScope(UserModel currentUser) {
@@ -155,7 +170,17 @@ public class UserBusinessRoleMappingController {
         }
 
         validateHospitalAdminAccess(currentUser);
-        return currentUser.getB2bUnit().getId();
+
+        Set<B2BUnitModel> businesses = currentUser.getBusinesses();
+        if (businesses == null || businesses.isEmpty()) {
+            throw new HltCustomerException(ErrorCode.BUSINESS_NOT_FOUND, "User does not have an associated business");
+        }
+
+        if (businesses.size() > 1) {
+            throw new HltCustomerException(ErrorCode.BAD_REQUEST, "User associated with multiple businesses, specify businessId explicitly");
+        }
+
+        return businesses.iterator().next().getId();
     }
 
     private Long resolveHospitalId(Long inputHospitalId) {
@@ -171,6 +196,17 @@ public class UserBusinessRoleMappingController {
         }
 
         validateHospitalAdminAccess(currentUser);
-        return currentUser.getB2bUnit().getId();
+
+        Set<B2BUnitModel> businesses = currentUser.getBusinesses();
+        if (businesses == null || businesses.isEmpty()) {
+            throw new HltCustomerException(ErrorCode.BUSINESS_NOT_FOUND, "User does not have an associated hospital");
+        }
+
+        if (businesses.size() > 1) {
+            throw new HltCustomerException(ErrorCode.BAD_REQUEST, "User associated with multiple hospitals, specify hospitalId explicitly");
+        }
+
+        return businesses.iterator().next().getId();
     }
+
 }

@@ -7,6 +7,7 @@ import com.hlt.usermanagement.dto.MailRequestDTO;
 import com.hlt.usermanagement.dto.UserBusinessRoleMappingDTO;
 import com.hlt.usermanagement.dto.UserDTO;
 import com.hlt.usermanagement.dto.enums.EmailType;
+import com.hlt.usermanagement.model.B2BUnitModel;
 import com.hlt.usermanagement.model.RoleModel;
 import com.hlt.usermanagement.model.UserBusinessRoleMappingModel;
 import com.hlt.usermanagement.model.UserModel;
@@ -20,6 +21,7 @@ import com.hlt.usermanagement.services.UserBusinessRoleMappingService;
 import com.hlt.usermanagement.services.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -163,10 +165,19 @@ public class UserBusinessRoleMappingServiceImpl implements UserBusinessRoleMappi
             throw new HltCustomerException(ErrorCode.ALREADY_EXISTS, "Telecaller already assigned to this hospital");
         }
 
-        user.setB2bUnit(b2bRepository.findById(hospitalId).orElseThrow(() -> new HltCustomerException(ErrorCode.BUSINESS_NOT_FOUND)));
+        B2BUnitModel hospital = b2bRepository.findById(hospitalId)
+                .orElseThrow(() -> new HltCustomerException(ErrorCode.BUSINESS_NOT_FOUND));
+
+        Set<B2BUnitModel> currentBusinesses = Optional.ofNullable(user.getBusinesses())
+                .orElse(new HashSet<>());
+
+        currentBusinesses.add(hospital);
+        user.setBusinesses(currentBusinesses);
+
         UserBusinessRoleMappingModel mapping = saveMapping(user, ERole.ROLE_TELECALLER);
         return populateResponse(mapping);
     }
+
 
     @Override
     public Page<UserDTO> getAssignableTelecallersForHospital(Long hospitalId, int page, int size) {
@@ -213,13 +224,18 @@ public class UserBusinessRoleMappingServiceImpl implements UserBusinessRoleMappi
     }
 
     private UserBusinessRoleMappingModel saveMapping(UserModel user, ERole role) {
+        B2BUnitModel business = user.getBusinesses().stream()
+                .findFirst()
+                .orElseThrow(() -> new HltCustomerException(ErrorCode.BUSINESS_NOT_FOUND, "User has no assigned business"));
+
         return mappingRepository.save(UserBusinessRoleMappingModel.builder()
                 .user(user)
-                .b2bUnit(user.getB2bUnit())
+                .b2bUnit(business)
                 .role(role)
                 .isActive(true)
                 .build());
     }
+
 
     private void assignRolesToUser(UserModel user, ERole role) {
         RoleModel roleModel = roleRepository.findByName(role)
@@ -240,11 +256,19 @@ public class UserBusinessRoleMappingServiceImpl implements UserBusinessRoleMappi
         user.setFullName(dto.getFullName());
         user.setUsername(dto.getUsername());
         user.setEmail(dto.getEmail());
+        user.setEmailHash(DigestUtils.sha256Hex(dto.getEmail()));
+        user.setPrimaryContactHash(DigestUtils.sha256Hex(dto.getPrimaryContact()));
         user.setPrimaryContact(dto.getPrimaryContact());
         user.setGender(dto.getGender());
         assignRolesToUser(user, ERole.ROLE_USER);
         user.setPassword(generateRandomPassword(8));
-        user.setB2bUnit(b2bRepository.findById(businessId).orElseThrow(() -> new HltCustomerException(ErrorCode.BUSINESS_NOT_FOUND)));
+        B2BUnitModel business = b2bRepository.findById(businessId)
+                .orElseThrow(() -> new HltCustomerException(ErrorCode.BUSINESS_NOT_FOUND));
+
+        Set<B2BUnitModel> businesses = new HashSet<>();
+        businesses.add(business);
+        user.setBusinesses(businesses);
+;
 
         try {
             return userService.saveUser(user);
@@ -253,11 +277,14 @@ public class UserBusinessRoleMappingServiceImpl implements UserBusinessRoleMappi
         }
     }
 
+
     private UserModel createUserWithoutBusiness(UserDTO dto) {
         UserModel user = new UserModel();
         user.setFullName(dto.getFullName());
         user.setUsername(dto.getUsername());
         user.setEmail(dto.getEmail());
+        user.setEmailHash(DigestUtils.sha256Hex(dto.getEmail()));
+        user.setPrimaryContactHash(DigestUtils.sha256Hex(dto.getPrimaryContact()));
         user.setPrimaryContact(dto.getPrimaryContact());
         user.setPassword(generateRandomPassword(8));
         user.setGender(dto.getGender());
@@ -288,4 +315,6 @@ public class UserBusinessRoleMappingServiceImpl implements UserBusinessRoleMappi
                 .email(user.getEmail())
                 .build();
     }
+
+
 }

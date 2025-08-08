@@ -85,10 +85,14 @@ public class AuthController extends JTBaseEndpoint {
             userModel.setEmail(loginRequest.getEmailAddress());
         }
 
+        // Instead of setB2bUnit(), add the business to the businesses set
         if (loginRequest.getBusinessId() != null) {
             B2BUnitModel unit = b2bUnitRepository.findById(loginRequest.getBusinessId())
                     .orElseThrow(() -> new HltCustomerException(ErrorCode.BUSINESS_NOT_FOUND));
-            userModel.setB2bUnit(unit);
+
+            // Ensure bidirectional consistency:
+            unit.setOwner(userModel);
+            userModel.getBusinesses().add(unit);
         }
 
         Set<RoleModel> userRoles = new HashSet<>();
@@ -99,6 +103,7 @@ public class AuthController extends JTBaseEndpoint {
         log.info("New user registered: {}", userModel.getPrimaryContact());
         return userModel;
     }
+
 
     private void validateUserUniqueness(String username, String primaryContact, String email) {
         if (userService.findByUsername(username).isPresent()) {
@@ -173,7 +178,12 @@ public class AuthController extends JTBaseEndpoint {
             userService.saveUser(userModel);
 
             String newAccessToken = jwtUtils.generateJwtToken(loggedInUser);
-            Long businessId = userModel.getB2bUnit() != null ? userModel.getB2bUnit().getId() : null;
+
+            List<Long> businessIds = userModel.getBusinesses() != null
+                    ? userModel.getBusinesses().stream()
+                    .map(B2BUnitModel::getId)
+                    .toList()
+                    : Collections.emptyList();
 
             return ResponseEntity.ok(new JwtResponse(
                     newAccessToken,
@@ -182,12 +192,14 @@ public class AuthController extends JTBaseEndpoint {
                     loggedInUser.getEmail(),
                     new ArrayList<>(loggedInUser.getRoles()),
                     refreshToken,
-                    businessId
+                    businessIds
             ));
         }
 
         throw new HltCustomerException(ErrorCode.TOKEN_PROCESSING_ERROR);
     }
+
+
 
     @PostMapping("/verify")
     public Boolean verifyOtp(@RequestBody LoginRequest loginRequest) {
@@ -229,7 +241,12 @@ public class AuthController extends JTBaseEndpoint {
             LoggedInUser loggedInUser = convertToLoggedInUser(userModel);
             String jwt = jwtUtils.generateJwtToken(loggedInUser);
             String refreshToken = jwtUtils.generateRefreshToken(loggedInUser);
-            Long businessId = userModel.getB2bUnit() != null ? userModel.getB2bUnit().getId() : null;
+
+            List<Long> businessIds = userModel.getBusinesses() != null
+                    ? userModel.getBusinesses().stream()
+                    .map(B2BUnitModel::getId)
+                    .toList()
+                    : Collections.emptyList();
 
             return new JwtResponse(
                     jwt,
@@ -238,13 +255,15 @@ public class AuthController extends JTBaseEndpoint {
                     loggedInUser.getEmail(),
                     new ArrayList<>(loggedInUser.getRoles()),
                     refreshToken,
-                    businessId
+                    businessIds
             );
         } finally {
             userOTPService.deleteByPrimaryContactAndOtpType(userModel.getPrimaryContact(), SIGN_IN);
             log.info("Deleted OTP for contact: {}", userModel.getPrimaryContact());
         }
     }
+
+
 
     private LoggedInUser convertToLoggedInUser(UserModel userModel) {
         LoggedInUser user = new LoggedInUser();

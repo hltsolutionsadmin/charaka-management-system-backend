@@ -50,9 +50,9 @@ public class B2BUnitPopulator implements Populator<B2BUnitModel, B2BUnitDTO> {
 			target.setCategoryName(source.getCategory().getName());
 		}
 
-		if (source.getUserModel() != null) {
+		if (source.getOwner() != null) {
 			UserDTO userDTO = new UserDTO();
-			userPopulator.populate(source.getUserModel(), userDTO);
+			userPopulator.populate(source.getOwner(), userDTO);
 			target.setUserDTO(userDTO);
 		}
 

@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
@@ -23,9 +24,9 @@ public class B2BUnitDTO {
 
 	private boolean enabled;
 
-	private Double businessLatitude;
+	private BigDecimal businessLatitude;
 
-	private Double businessLongitude;
+	private BigDecimal businessLongitude;
 
 	private String categoryName;
 

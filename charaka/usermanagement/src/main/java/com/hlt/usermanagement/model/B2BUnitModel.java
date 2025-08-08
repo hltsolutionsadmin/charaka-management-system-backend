@@ -1,58 +1,60 @@
 package com.hlt.usermanagement.model;
 
-
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.checkerframework.checker.units.qual.A;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Set;
 
 @Entity
-@Table(name = "b2b_unit")
+@Table(name = "B2B_UNIT")
 @Getter
 @Setter
 public class B2BUnitModel extends AuditableModel {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "ID", nullable = false, updatable = false)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private UserModel userModel;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "OWNER_USER_ID", nullable = false)
+    private UserModel owner;
 
-    @Column(name = "business_name", nullable = false)
+    @Column(name = "BUSINESS_NAME", nullable = false, length = 150)
     private String businessName;
 
-    @ManyToOne
-    @JoinColumn(name = "category_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "CATEGORY_ID")
     private BusinessCategoryModel category;
 
-    @Column(name = "contact_number", nullable = false)
+    @Column(name = "CONTACT_NUMBER", nullable = false, length = 20)
     private String contactNumber;
 
-    @Column(name = "business_latitude")
-    private Double businessLatitude;
+    @Column(name = "BUSINESS_LATITUDE", precision = 10, scale = 6)
+    private BigDecimal businessLatitude;
 
-    @Column(name = "business_longitude")
-    private Double businessLongitude;
+    @Column(name = "BUSINESS_LONGITUDE", precision = 10, scale = 6)
+    private BigDecimal businessLongitude;
 
-    @OneToMany(mappedBy = "b2bUnitModel", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+
+    @OneToMany(mappedBy = "b2bUnitModel", fetch = FetchType.LAZY,
+            cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<BusinessAttributeModel> attributes;
 
-    @Column(name = "enabled", nullable = false)
+    @Column(name = "ENABLED", nullable = false)
     private boolean enabled = true;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "address_id", nullable = false)
+    @JoinColumn(name = "ADDRESS_ID", nullable = false)
     private AddressModel businessAddress;
 
-    @Column(name = "is_temporarily_closed", nullable = false)
-    private Boolean isTemporarilyClosed = false;
+    @Column(name = "IS_TEMPORARILY_CLOSED", nullable = false)
+    private boolean isTemporarilyClosed = false;
 
-    @Column(name = "creation_date", nullable = false, updatable = false)
+    @Column(name = "CREATION_DATE", nullable = false, updatable = false)
     private LocalDateTime creationDate;
 
     @PrePersist

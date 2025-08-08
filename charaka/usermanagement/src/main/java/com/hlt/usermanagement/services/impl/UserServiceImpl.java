@@ -17,7 +17,6 @@ import com.hlt.usermanagement.repository.RoleRepository;
 import com.hlt.usermanagement.repository.UserRepository;
 import com.hlt.usermanagement.services.UserService;
 import com.hlt.utils.SecurityUtils;
-import io.micrometer.common.util.StringUtils;
 import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotBlank;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +29,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
+
 @Service
 @Slf4j
 public class UserServiceImpl implements UserService, UserServiceAdapter {
@@ -57,8 +58,6 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
             throw new HltCustomerException(ErrorCode.USER_ALREADY_EXISTS);
         }
 
-        B2BUnitModel business = dto.getBusinessId() != null ? findB2BUnitById(dto.getBusinessId()) : null;
-
         UserModel user = new UserModel();
         user.setUsername(dto.getUsername());
         user.setFullName(dto.getFullName());
@@ -66,7 +65,13 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
         user.setEmail(dto.getEmail());
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
         user.setRoleModels(fetchRoles(dto.getUserRoles()));
-        user.setB2bUnit(business);
+
+        if (dto.getBusinessId() != null) {
+            B2BUnitModel business = findB2BUnitById(dto.getBusinessId());
+            Set<B2BUnitModel> businesses = new HashSet<>();
+            businesses.add(business);
+            user.setBusinesses(businesses);
+        }
 
         return saveUser(user).getId();
     }
@@ -103,10 +108,16 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
         user.setRoleModels(fetchRoles(userRoles));
         user.setCreationTime(new Date());
         user.setFullName(fullName);
-        user.setB2bUnit(b2bUnit);
+
+        if (b2bUnit != null) {
+            Set<B2BUnitModel> businesses = new HashSet<>();
+            businesses.add(b2bUnit);
+            user.setBusinesses(businesses);
+        }
 
         return saveUser(user).getId();
     }
+
 
     @Override
     public void addUserRole(Long userId, ERole userRole) {
@@ -145,6 +156,17 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
 
         return dto;
     }
+    private MediaDTO convertToMediaDto(MediaModel media) {
+        MediaDTO dto = new MediaDTO();
+        dto.setId(media.getId());
+        dto.setUrl(media.getUrl());
+        dto.setName(media.getFileName());
+        dto.setDescription(media.getDescription());
+        dto.setExtension(media.getExtension());
+        dto.setCreationTime(media.getCreationTime());
+        dto.setMediaType(media.getMediaType());
+        return dto;
+    }
 
     @Override
     public UserModel findById(Long userId) {
@@ -176,8 +198,6 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
         return userRepository.findByPrimaryContact(primaryContact)
                 .map(this::convertToUserDto);
     }
-
-
 
     @Override
     public List<UserDTO> getUsersByRole(String roleName) {
@@ -236,49 +256,44 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
                 .orElseThrow(() -> new HltCustomerException(ErrorCode.USER_NOT_FOUND));
     }
 
-    private MediaDTO convertToMediaDto(MediaModel media) {
-        MediaDTO dto = new MediaDTO();
-        dto.setId(media.getId());
-        dto.setUrl(media.getUrl());
-        dto.setName(media.getFileName());
-        dto.setDescription(media.getDescription());
-        dto.setExtension(media.getExtension());
-        dto.setCreationTime(media.getCreationTime());
-        dto.setMediaType(media.getMediaType());
-        return dto;
-    }
-
     public UserDTO convertToUserDto(UserModel user) {
-        Set<com.hlt.commonservice.dto.Role> roles = user.getRoleModels().stream()
+        // Map roles
+        Set<com.hlt.commonservice.dto.Role> roles = Optional.ofNullable(user.getRoleModels())
+                .orElse(Collections.emptySet())
+                .stream()
                 .map(role -> new com.hlt.commonservice.dto.Role(role.getId(), role.getName()))
                 .collect(Collectors.toSet());
 
-        String profilePicture = Optional.ofNullable(
-                        mediaRepository.findByCustomerIdAndMediaType(user.getId(), "PROFILE_PICTURE"))
-                .map(MediaModel::getUrl)
-                .orElse(null);
+        // Get profile picture URL
+        String profilePicture = getProfilePictureUrl(user.getId());
 
-        B2BUnitDTO b2bUnit = Optional.ofNullable(user.getB2bUnit())
+        // Resolve first B2B Unit if multiple exist
+        B2BUnitDTO b2bUnit = Optional.ofNullable(user.getBusinesses())
+                .flatMap(businesses -> businesses.stream().findFirst())
                 .map(this::convertToB2BDTO)
-                .orElseGet(() -> b2bUnitRepository.findByUserModel(user)
+                .orElseGet(() -> b2bUnitRepository.findByOwner(user)
                         .map(this::convertToB2BDTO)
                         .orElse(null));
 
         return UserDTO.builder()
                 .id(user.getId())
-                .fullName(user.getFullName())
-                .primaryContact(user.getPrimaryContact())
-                .email(user.getEmail())
+                .fullName(StringUtils.trimToNull(user.getFullName()))
+                .primaryContact(StringUtils.trimToNull(user.getPrimaryContact()))
+                .email(StringUtils.trimToNull(user.getEmail()))
                 .creationTime(user.getCreationTime())
                 .token(user.getFcmToken())
-                .username(user.getUsername())
-                .gender(user.getGender())
+                .username(StringUtils.trimToNull(user.getUsername()))
+                .gender(StringUtils.trimToNull(user.getGender()))
                 .profilePicture(profilePicture)
                 .roles(roles)
-                .juviId(user.getJuviId())
-                .password(user.getPassword())
+                .juviId(StringUtils.trimToNull(user.getJuviId()))
                 .b2bUnit(b2bUnit)
                 .build();
+    }
+
+    private String getProfilePictureUrl(Long userId) {
+        MediaModel profilePicture = mediaRepository.findByCustomerIdAndMediaType(userId, "PROFILE_PICTURE");
+        return profilePicture != null ? profilePicture.getUrl() : null;
     }
 
     private B2BUnitDTO convertToB2BDTO(B2BUnitModel unit) {
