@@ -33,9 +33,10 @@ public class UserBusinessRoleMappingModel extends AuditableModel {
     @JoinColumn(name = "user_id", nullable = false)
     private UserModel user;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "b2b_unit_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "b2b_unit_id", nullable = true)
     private B2BUnitModel b2bUnit;
+
 
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false, length = 50)
