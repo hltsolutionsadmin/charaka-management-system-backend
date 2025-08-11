@@ -62,10 +62,11 @@ public class UserBusinessRoleMappingServiceImpl implements UserBusinessRoleMappi
         UserModel user = createUserFromDTO(dto.getUserDetails(), businessId);
         assignRolesToUser(user, ERole.ROLE_HOSPITAL_ADMIN);
         userRepository.save(user);
-        sendOnboardingEmail(user.getEmail(),user.getUsername() ,user.getFullName(),user.getPassword(), ERole.ROLE_HOSPITAL_ADMIN);
+        sendOnboardingEmail(user.getEmail(), user.getUsername(), user.getFullName(), user.getPassword(), ERole.ROLE_HOSPITAL_ADMIN);
         UserBusinessRoleMappingModel mapping = saveMapping(user, ERole.ROLE_HOSPITAL_ADMIN);
         return populateResponse(mapping);
     }
+
     @Transactional
     private void sendOnboardingEmail(String email, String username, String fullName, String password, ERole role) {
         String subject = getSubjectForRole(role);
@@ -106,7 +107,6 @@ public class UserBusinessRoleMappingServiceImpl implements UserBusinessRoleMappi
     }
 
 
-
     @Override
     @Transactional
     public UserBusinessRoleMappingDTO onboardDoctor(UserBusinessRoleMappingDTO dto) {
@@ -123,21 +123,29 @@ public class UserBusinessRoleMappingServiceImpl implements UserBusinessRoleMappi
     @Transactional
     public UserBusinessRoleMappingDTO onboardTelecaller(UserBusinessRoleMappingDTO dto) {
         UserDTO userDTO = dto.getUserDetails();
-        userRepository.findByUsername(userDTO.getUsername()).ifPresent(user -> {
-            throw new HltCustomerException(ErrorCode.USER_ALREADY_EXISTS);
-        });
+        validateUserNotExists(userDTO.getUsername());
 
         UserModel user = createUserWithoutBusiness(userDTO);
         assignRolesToUser(user, ERole.ROLE_TELECALLER);
         userRepository.save(user);
-        sendOnboardingEmail(dto.getUserDetails().getEmail(),
-                dto.getUserDetails().getUsername(),
-                dto.getUserDetails().getFullName(),
-                dto.getUserDetails().getPassword(),
-                ERole.ROLE_TELECALLER);
-        UserBusinessRoleMappingModel mapping = saveMapping(user, ERole.ROLE_TELECALLER);
+
+        UserBusinessRoleMappingModel mapping = UserBusinessRoleMappingModel.builder()
+                .user(user)
+                .role(ERole.ROLE_TELECALLER)
+                .isActive(true)
+                .build();
+        mapping = mappingRepository.save(mapping);
+        sendOnboardingEmail(userDTO.getEmail(), userDTO.getUsername(), userDTO.getFullName(), user.getPassword(), ERole.ROLE_TELECALLER);
         return populateResponse(mapping);
     }
+
+
+    private void validateUserNotExists(String username) {
+        userRepository.findByUsername(username).ifPresent(user -> {
+            throw new HltCustomerException(ErrorCode.USER_ALREADY_EXISTS);
+        });
+    }
+
 
     @Override
     @Transactional
@@ -224,6 +232,7 @@ public class UserBusinessRoleMappingServiceImpl implements UserBusinessRoleMappi
     }
 
     private UserBusinessRoleMappingModel saveMapping(UserModel user, ERole role) {
+
         B2BUnitModel business = user.getBusinesses().stream()
                 .findFirst()
                 .orElseThrow(() -> new HltCustomerException(ErrorCode.BUSINESS_NOT_FOUND, "User has no assigned business"));
@@ -267,8 +276,8 @@ public class UserBusinessRoleMappingServiceImpl implements UserBusinessRoleMappi
 
         Set<B2BUnitModel> businesses = new HashSet<>();
         businesses.add(business);
+        business.setOwner(user);
         user.setBusinesses(businesses);
-;
 
         try {
             return userService.saveUser(user);

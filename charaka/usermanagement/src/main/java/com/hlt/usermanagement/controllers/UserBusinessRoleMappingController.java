@@ -50,7 +50,6 @@ public class UserBusinessRoleMappingController {
     @PreAuthorize(JuavaryaConstants.ROLE_SUPER_ADMIN)
     public ResponseEntity<StandardResponse<UserBusinessRoleMappingDTO>> onboardTelecaller(
             @RequestBody UserBusinessRoleMappingDTO dto) {
-        UserModel currentUser = fetchCurrentUser();
         UserBusinessRoleMappingDTO result = userBusinessRoleMappingService.onboardTelecaller(dto);
         return ResponseEntity.ok(StandardResponse.single("Telecaller onboarded successfully", result));
     }
@@ -162,12 +161,12 @@ public class UserBusinessRoleMappingController {
     }
 
     private Long getBusinessScope(UserModel currentUser) {
-        boolean isSuperAdmin = currentUser.getRoleModels().stream()
-                .anyMatch(role -> role.getName() == ERole.ROLE_SUPER_ADMIN);
-
-        if (isSuperAdmin) {
-            throw new HltCustomerException(ErrorCode.BAD_REQUEST, "Super admin must provide businessId explicitly");
-        }
+//        boolean isSuperAdmin = currentUser.getRoleModels().stream()
+//                .anyMatch(role -> role.getName() == ERole.ROLE_SUPER_ADMIN);
+//
+//        if (isSuperAdmin) {
+//            throw new HltCustomerException(ErrorCode.BAD_REQUEST, "Super admin must provide businessId explicitly");
+//        }
 
         validateHospitalAdminAccess(currentUser);
 

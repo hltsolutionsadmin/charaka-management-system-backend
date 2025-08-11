@@ -27,6 +27,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     public AppointmentResponseDTO create(AppointmentResponseDTO request) {
         EnquiryModel enquiry = enquiryRepository.findById(request.getEnquiryId())
                 .orElseThrow(() -> new RuntimeException("Enquiry not found with id: " + request.getEnquiryId()));
+        enquiry.setConvertedToAppointment(true);
 
         AppointmentModel model = new AppointmentModel();
         model.setBusinessId(request.getBusinessId());

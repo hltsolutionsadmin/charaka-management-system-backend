@@ -1,18 +1,35 @@
-//package com.hlt.healthcare.service.impl;
+package com.hlt.healthcare.service.impl;
+
+import com.hlt.healthcare.dto.PatientResponseDTO;
+import com.hlt.healthcare.dto.request.PatientCreateRequest;
+import com.hlt.healthcare.service.PatientService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
 //
-//import com.hlt.healthcare.dto.PatientResponseDTO;
-//import com.hlt.healthcare.dto.request.PatientCreateRequest;
-//import com.hlt.healthcare.model.PatientModel;
-//import com.hlt.healthcare.repository.PatientRepository;
-//import com.hlt.healthcare.service.PatientService;
-//import lombok.RequiredArgsConstructor;
-//import org.springframework.data.domain.Page;
-//import org.springframework.data.domain.Pageable;
-//import org.springframework.stereotype.Service;
-//
-//@Service
-//@RequiredArgsConstructor
-//public class PatientServiceImpl implements PatientService {
+@Service
+@RequiredArgsConstructor
+public class PatientServiceImpl implements PatientService {
+    @Override
+    public PatientResponseDTO create(PatientCreateRequest request) {
+        return null;
+    }
+
+    @Override
+    public PatientResponseDTO getById(Long id) {
+        return null;
+    }
+
+    @Override
+    public PatientResponseDTO getByPhone(String phone) {
+        return null;
+    }
+
+    @Override
+    public Page<PatientResponseDTO> getByBusiness(Long businessId, Pageable pageable) {
+        return null;
+    }
 //
 //    private final PatientRepository patientRepository;
 //
@@ -50,5 +67,5 @@
 //    public Page<PatientResponseDTO> getByBusiness(Long businessId, Pageable pageable) {
 //        return patientRepository.findByBusinessId(businessId, pageable)
 //                .map(PatientMapper::toDTO);
-//    }
-//}
+    }
+

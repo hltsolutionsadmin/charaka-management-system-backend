@@ -1,5 +1,7 @@
 package com.hlt.healthcare.service.impl;
 
+import com.hlt.auth.exception.handling.ErrorCode;
+import com.hlt.auth.exception.handling.HltCustomerException;
 import com.hlt.commonservice.dto.UserDTO;
 import com.hlt.healthcare.client.UserMgmtClient;
 import com.hlt.healthcare.dto.EnquiryResponseDTO;
@@ -34,7 +36,7 @@ public class EnquiryServiceImpl implements EnquiryService {
 
         if (request.getPatientId() != null) {
             PatientModel patient = patientRepository.findById(request.getPatientId())
-                    .orElseThrow(() -> new RuntimeException("Patient not found with ID: " + request.getPatientId()));
+                    .orElseThrow(() -> new HltCustomerException(ErrorCode.USER_NOT_FOUND));
             model.setPatient(patient);
         }
 
@@ -66,7 +68,7 @@ public class EnquiryServiceImpl implements EnquiryService {
     @Override
     public EnquiryResponseDTO getById(Long enquiryId) {
         EnquiryModel model = enquiryRepository.findById(enquiryId)
-                .orElseThrow(() -> new RuntimeException("Enquiry not found with ID: " + enquiryId));
+                .orElseThrow(() -> new HltCustomerException(ErrorCode.USER_NOT_FOUND));
         return populate(model);
     }
 
@@ -81,4 +83,3 @@ public class EnquiryServiceImpl implements EnquiryService {
         return EnquiryMapper.toDTO(model, telecaller, patient);
     }
 }
-
