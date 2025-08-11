@@ -40,4 +40,6 @@ public interface EnquiryService {
      * @return EnquiryResponseDTO
      */
     EnquiryResponseDTO getById(Long enquiryId);
+
+     Page<EnquiryResponseDTO> getByProspectContact(String contact, Pageable pageable);
 }

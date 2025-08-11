@@ -12,4 +12,6 @@ import java.util.List;
 public interface EnquiryRepository extends JpaRepository<EnquiryModel, Long> {
     Page<EnquiryModel> findByBusinessId(Long businessId, Pageable pageable);
     Page<EnquiryModel> findByTelecallerId(Long telecallerId, Pageable pageable);
+    Page<EnquiryModel> findByProspectContact(String prospectContact, Pageable pageable);
+
 }
