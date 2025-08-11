@@ -1,5 +1,8 @@
 package com.hlt.healthcare.dto.enums;
 
 public enum AppointmentStatus {
-    SCHEDULED, CANCELLED, COMPLETED
+    REQUEST,
+    SCHEDULED,
+    COMPLETED,
+    CANCELLED
 }

@@ -10,6 +10,10 @@ import java.util.Optional;
 
 @Repository
 public interface PatientRepository extends JpaRepository<PatientModel, Long> {
-    Optional<PatientModel> findByEnquiryId(Long enquiryId);
+
+    Optional<PatientModel> findByPatientCode(String patientCode);
+
+    Optional<PatientModel> findByAppointment_Id(Long appointmentId);
+
     Page<PatientModel> findByBusinessId(Long businessId, Pageable pageable);
 }

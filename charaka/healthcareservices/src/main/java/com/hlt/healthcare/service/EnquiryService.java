@@ -1,7 +1,6 @@
 package com.hlt.healthcare.service;
 
-import com.hlt.healthcare.dto.EnquiryResponseDTO;
-import com.hlt.healthcare.dto.request.EnquiryCreateRequest;
+import com.hlt.healthcare.dto.EnquiryDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -11,9 +10,9 @@ public interface EnquiryService {
      * Creates a new enquiry.
      *
      * @param request Enquiry create request
-     * @return EnquiryResponseDTO with details of the created enquiry
+     * @return EnquiryDTO with details of the created enquiry
      */
-    EnquiryResponseDTO create(EnquiryCreateRequest request);
+    EnquiryDTO create(EnquiryDTO request);
 
     /**
      * Retrieves all enquiries for a specific business.
@@ -22,7 +21,7 @@ public interface EnquiryService {
      * @param pageable   Pagination details
      * @return Page of EnquiryResponseDTO
      */
-    Page<EnquiryResponseDTO> getByBusiness(Long businessId, Pageable pageable);
+    Page<EnquiryDTO> getByBusiness(Long businessId, Pageable pageable);
 
     /**
      * Retrieves all enquiries handled by a specific telecaller.
@@ -31,7 +30,7 @@ public interface EnquiryService {
      * @param pageable     Pagination details
      * @return Page of EnquiryResponseDTO
      */
-    Page<EnquiryResponseDTO> getByTelecaller(Long telecallerId, Pageable pageable);
+    Page<EnquiryDTO> getByTelecaller(Long telecallerId, Pageable pageable);
 
     /**
      * Retrieves a specific enquiry by ID.
@@ -39,7 +38,16 @@ public interface EnquiryService {
      * @param enquiryId Enquiry ID
      * @return EnquiryResponseDTO
      */
-    EnquiryResponseDTO getById(Long enquiryId);
+    EnquiryDTO getById(Long enquiryId);
 
-     Page<EnquiryResponseDTO> getByProspectContact(String contact, Pageable pageable);
+    /**
+     * Retrieves enquiries by prospect contact (with pagination).
+     *
+     * @param contact  Prospect contact
+     * @param pageable Pagination details
+     * @return Page of EnquiryResponseDTO
+     */
+    Page<EnquiryDTO> getByProspectContact(String contact, Pageable pageable);
+
+
 }
