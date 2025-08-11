@@ -1,16 +1,16 @@
 package com.hlt.healthcare.service;
 
-import com.hlt.healthcare.dto.AppointmentResponseDTO;
+import com.hlt.healthcare.dto.AppointmentDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface AppointmentService {
 
-    AppointmentResponseDTO create(AppointmentResponseDTO request);
+    AppointmentDTO create(AppointmentDTO request);
 
-    AppointmentResponseDTO getById(Long appointmentId);
+    AppointmentDTO getById(Long appointmentId);
 
-    Page<AppointmentResponseDTO> getByBusiness(Long businessId, Pageable pageable);
+    Page<AppointmentDTO> getByBusiness(Long businessId, Pageable pageable);
 
-    Page<AppointmentResponseDTO> getByDoctor(Long doctorId, Pageable pageable);
+    Page<AppointmentDTO> getByDoctor(Long doctorId, Pageable pageable);
 }

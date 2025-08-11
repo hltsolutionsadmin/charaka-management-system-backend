@@ -1,5 +1,6 @@
 package com.hlt.healthcare.model;
 
+import com.hlt.healthcare.dto.enums.AppointmentStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,6 +24,9 @@ public class AppointmentModel extends AuditableModel {
     @JoinColumn(name = "enquiry_id", nullable = false)
     private EnquiryModel enquiry;
 
+    @OneToOne(mappedBy = "appointment", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private PatientModel patient;
+
     @Column(name = "doctor_id", nullable = false)
     private Long doctorId;
 
@@ -33,5 +37,6 @@ public class AppointmentModel extends AuditableModel {
     private String appointmentNotes;
 
     @Column(name = "status")
-    private String status; // e.g. "SCHEDULED", "COMPLETED", "CANCELLED"
+    @Enumerated(EnumType.STRING)
+    private AppointmentStatus status;
 }

@@ -1,10 +1,12 @@
 package com.hlt.healthcare.service.impl;
 
-import com.hlt.commonservice.dto.UserDTO;
-import com.hlt.healthcare.client.UserMgmtClient;
-import com.hlt.healthcare.dto.AppointmentResponseDTO;
+import com.hlt.auth.exception.handling.ErrorCode;
+import com.hlt.auth.exception.handling.HltCustomerException;
+import com.hlt.healthcare.dto.AppointmentDTO;
+import com.hlt.healthcare.dto.enums.AppointmentStatus;
 import com.hlt.healthcare.model.AppointmentModel;
 import com.hlt.healthcare.model.EnquiryModel;
+import com.hlt.healthcare.populator.AppointmentPopulator;
 import com.hlt.healthcare.repository.AppointmentRepository;
 import com.hlt.healthcare.repository.EnquiryRepository;
 import com.hlt.healthcare.service.AppointmentService;
@@ -20,53 +22,50 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     private final AppointmentRepository appointmentRepository;
     private final EnquiryRepository enquiryRepository;
-    private final UserMgmtClient userMgmtClient;
+    private final AppointmentPopulator appointmentPopulator;
 
     @Override
     @Transactional
-    public AppointmentResponseDTO create(AppointmentResponseDTO request) {
+    public AppointmentDTO create(AppointmentDTO request) {
         EnquiryModel enquiry = enquiryRepository.findById(request.getEnquiryId())
-                .orElseThrow(() -> new RuntimeException("Enquiry not found with id: " + request.getEnquiryId()));
+                .orElseThrow(() -> new HltCustomerException(ErrorCode.ENQUIRY_NOT_FOUND));
+
         enquiry.setConvertedToAppointment(true);
 
         AppointmentModel model = new AppointmentModel();
-        model.setBusinessId(request.getBusinessId());
+        model.setBusinessId(request.getHospitalId());
         model.setDoctorId(request.getDoctorId());
         model.setEnquiry(enquiry);
         model.setAppointmentDateTime(request.getAppointmentDateTime());
         model.setAppointmentNotes(request.getAppointmentNotes());
-        model.setStatus(request.getStatus());
-
+        model.setStatus(AppointmentStatus.REQUEST);
         appointmentRepository.save(model);
 
-        return populate(model);
+        return toDTO(model);
     }
 
     @Override
-    public Page<AppointmentResponseDTO> getByBusiness(Long businessId, Pageable pageable) {
-        return appointmentRepository.findByBusinessId(businessId, pageable).map(this::populate);
+    public Page<AppointmentDTO> getByBusiness(Long businessId, Pageable pageable) {
+        return appointmentRepository.findByBusinessId(businessId, pageable)
+                .map(this::toDTO);
     }
 
     @Override
-    public Page<AppointmentResponseDTO> getByDoctor(Long doctorId, Pageable pageable) {
-        return appointmentRepository.findByDoctorId(doctorId, pageable).map(this::populate);
+    public Page<AppointmentDTO> getByDoctor(Long doctorId, Pageable pageable) {
+        return appointmentRepository.findByDoctorId(doctorId, pageable)
+                .map(this::toDTO);
     }
 
     @Override
-    public AppointmentResponseDTO getById(Long appointmentId) {
+    public AppointmentDTO getById(Long appointmentId) {
         AppointmentModel model = appointmentRepository.findById(appointmentId)
-                .orElseThrow(() -> new RuntimeException("Appointment not found with id: " + appointmentId));
-        return populate(model);
+                .orElseThrow(() -> new HltCustomerException(ErrorCode.APPOINTMENT_NOT_FOUND));
+        return toDTO(model);
     }
 
-    private AppointmentResponseDTO populate(AppointmentModel model) {
-        UserDTO doctor = null;
-        try {
-            doctor = userMgmtClient.getUserById(model.getDoctorId());
-        } catch (Exception ignored) {
-        }
-
-//        return AppointmentMapper.toDTO(model, doctor); //TODO
-        return null;
+    private AppointmentDTO toDTO(AppointmentModel model) {
+        AppointmentDTO dto = new AppointmentDTO();
+        appointmentPopulator.populate(model, dto);
+        return dto;
     }
 }
