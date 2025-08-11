@@ -72,6 +72,13 @@ public class EnquiryServiceImpl implements EnquiryService {
         return populate(model);
     }
 
+    @Override
+    public Page<EnquiryResponseDTO> getByProspectContact(String contact, Pageable pageable) {
+        return enquiryRepository.findByProspectContact(contact, pageable)
+                .map(this::populate);
+    }
+
+
     private EnquiryResponseDTO populate(EnquiryModel model) {
         UserDTO telecaller = null;
         try {

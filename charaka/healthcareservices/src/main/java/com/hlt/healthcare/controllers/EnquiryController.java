@@ -41,4 +41,12 @@ public class EnquiryController {
         EnquiryResponseDTO response = enquiryService.getById(enquiryId);
         return StandardResponse.single("Fetched enquiry successfully", response);
     }
+
+    @GetMapping("/prospect-contact/{contact}")
+    public StandardResponse<Page<EnquiryResponseDTO>> getEnquiriesByProspectContact(
+            @PathVariable String contact, Pageable pageable) {
+        Page<EnquiryResponseDTO> response = enquiryService.getByProspectContact(contact, pageable);
+        return StandardResponse.page("Fetched enquiries for prospect contact successfully", response);
+    }
+
 }
