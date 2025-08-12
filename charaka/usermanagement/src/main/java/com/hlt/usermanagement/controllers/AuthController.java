@@ -149,7 +149,6 @@ public class AuthController extends JTBaseEndpoint {
     }
 
 
-
     @PostMapping("/login/username")
     public ResponseEntity<Object> loginWithUsername(@Valid @RequestBody UsernameLoginRequest request) throws JsonProcessingException {
         UserModel user = userService.findByUsername(request.getUsername())
@@ -198,7 +197,6 @@ public class AuthController extends JTBaseEndpoint {
 
         throw new HltCustomerException(ErrorCode.TOKEN_PROCESSING_ERROR);
     }
-
 
 
     @PostMapping("/verify")
@@ -262,7 +260,6 @@ public class AuthController extends JTBaseEndpoint {
             log.info("Deleted OTP for contact: {}", userModel.getPrimaryContact());
         }
     }
-
 
 
     private LoggedInUser convertToLoggedInUser(UserModel userModel) {
