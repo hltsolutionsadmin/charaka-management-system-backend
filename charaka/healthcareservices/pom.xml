@@ -2,21 +2,25 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
     <parent>
-        <artifactId>juvarya</artifactId>
         <groupId>com.juvarya</groupId>
+        <artifactId>charaka</artifactId>
         <version>1.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath> <!-- Optional but recommended -->
     </parent>
+
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>healthcareservices</artifactId>
     <groupId>com.juvarya.deliverymanagement</groupId>
+
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <juvarya.commonservices.version>1.0-SNAPSHOT</juvarya.commonservices.version>
-
     </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
@@ -27,6 +31,7 @@
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
         </dependency>
+
         <dependency>
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-solr</artifactId>
@@ -38,12 +43,12 @@
             <artifactId>caffeine</artifactId>
         </dependency>
 
-
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <version>${mysql.version}</version>
         </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -55,7 +60,6 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Mockito Core for unit testing -->
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
@@ -72,23 +76,23 @@
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
-
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-openfeign</artifactId>
         </dependency>
 
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
+
         <dependency>
-            <artifactId>commonservices</artifactId>
             <groupId>com.juvarya.commonservices</groupId>
+            <artifactId>commonservices</artifactId>
             <version>${juvarya.commonservices.version}</version>
             <scope>compile</scope>
         </dependency>
+
         <dependency>
             <groupId>org.modelmapper</groupId>
             <artifactId>modelmapper</artifactId>
@@ -96,8 +100,8 @@
             <scope>compile</scope>
         </dependency>
 
-
     </dependencies>
+
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -121,9 +125,9 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-
         </dependencies>
     </dependencyManagement>
+
     <build>
         <finalName>service-partners</finalName>
         <plugins>
@@ -131,7 +135,6 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
             </plugin>
-
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -153,4 +156,5 @@
             </plugin>
         </plugins>
     </build>
+
 </project>
