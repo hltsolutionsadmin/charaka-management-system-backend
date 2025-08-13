@@ -57,6 +57,8 @@ public class UserPopulator implements Populator<UserModel, UserDTO> {
             );
         }
     }
+
+    
     public UserDTO toDTO(UserModel source) {
         if (source == null) return null;
         UserDTO dto = new UserDTO();

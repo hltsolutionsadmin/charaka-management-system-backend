@@ -49,5 +49,7 @@ public interface EnquiryService {
      */
     Page<EnquiryDTO> getByProspectContact(String contact, Pageable pageable);
 
+    Page<EnquiryDTO> getCustomerHistoryByContactHash(String hash, int page, int size);
+
 
 }

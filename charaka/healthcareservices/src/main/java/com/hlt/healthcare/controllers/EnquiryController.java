@@ -8,6 +8,7 @@ import com.hlt.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -55,5 +56,17 @@ public class EnquiryController {
         Page<EnquiryDTO> response = enquiryService.getByProspectContact(contact, pageable);
         return StandardResponse.page("Fetched enquiries for prospect contact successfully", response);
     }
+
+    @GetMapping("/customer-history/{hash}")
+    public StandardResponse<Page<EnquiryDTO>> getCustomerHistory(
+            @PathVariable String hash,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        Page<EnquiryDTO> history = enquiryService.getCustomerHistoryByContactHash(hash, page, size);
+        return StandardResponse.page("Customer history fetched successfully", history);
+    }
+
+
 
 }
