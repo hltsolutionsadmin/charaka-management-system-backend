@@ -41,6 +41,8 @@ public class UserBusinessRoleMappingServiceImpl implements UserBusinessRoleMappi
 
     private static final int MAX_HOSPITALS_PER_TELECALLER = 2;
 
+    private static final ERole TELECALLER_ROLE = ERole.ROLE_TELECALLER;
+
     private final UserBusinessRoleMappingRepository mappingRepository;
     private final UserService userService;
     private final UserRepository userRepository;
@@ -158,48 +160,87 @@ public class UserBusinessRoleMappingServiceImpl implements UserBusinessRoleMappi
         return onboardGenericRole(dto, ERole.ROLE_RECEPTIONIST);
     }
 
+
+
     @Override
     @Transactional
-    public UserBusinessRoleMappingDTO assignTelecallerToHospital(Long telecallerId, Long hospitalId) {
-        if (telecallerId == null) throw new HltCustomerException(ErrorCode.NOT_FOUND, "Telecaller ID is required");
+    public UserBusinessRoleMappingDTO assignTelecallerToHospital(Long telecallerMappingId, Long hospitalId) {
 
-        UserModel user = getUserOrThrow(telecallerId);
-
-        if (mappingRepository.countByUserIdAndRoleAndIsActiveTrue(user.getId(), ERole.ROLE_TELECALLER) >= MAX_HOSPITALS_PER_TELECALLER) {
-            throw new HltCustomerException(ErrorCode.INVALID_ROLE_FOR_OPERATION, "Telecaller already assigned to 2 hospitals");
+        if (telecallerMappingId == null) {
+            throw new HltCustomerException(ErrorCode.NOT_FOUND, "Telecaller mapping ID is required");
         }
 
-        if (mappingRepository.existsByUserIdAndB2bUnitIdAndRoleAndIsActiveTrue(user.getId(), hospitalId, ERole.ROLE_TELECALLER)) {
+        // Fetch the telecaller mapping
+        UserBusinessRoleMappingModel existingMapping = mappingRepository.findById(telecallerMappingId)
+                .orElseThrow(() -> new HltCustomerException(ErrorCode.NOT_FOUND, "Telecaller mapping not found"));
+
+        UserModel telecaller = existingMapping.getUser();
+
+        // 1. Check max allowed hospitals for this telecaller
+        long activeAssignments = mappingRepository.countByUserIdAndRoleAndIsActiveTrue(
+                telecaller.getId(), ERole.ROLE_TELECALLER
+        );
+        if (activeAssignments >= MAX_HOSPITALS_PER_TELECALLER) {
+            throw new HltCustomerException(ErrorCode.INVALID_ROLE_FOR_OPERATION,
+                    "Telecaller already assigned to the maximum number of hospitals (" + MAX_HOSPITALS_PER_TELECALLER + ")");
+        }
+
+        // 2. Prevent duplicate assignment to the same hospital
+        boolean alreadyAssigned = mappingRepository.existsByUserIdAndB2bUnitIdAndRoleAndIsActiveTrue(
+                telecaller.getId(), hospitalId, ERole.ROLE_TELECALLER
+        );
+        if (alreadyAssigned) {
             throw new HltCustomerException(ErrorCode.ALREADY_EXISTS, "Telecaller already assigned to this hospital");
         }
 
+        // 3. Fetch the hospital
         B2BUnitModel hospital = b2bRepository.findById(hospitalId)
                 .orElseThrow(() -> new HltCustomerException(ErrorCode.BUSINESS_NOT_FOUND));
 
-        Set<B2BUnitModel> currentBusinesses = Optional.ofNullable(user.getBusinesses())
+        // 4. Update telecaller's business mapping
+        Set<B2BUnitModel> assignedBusinesses = Optional.ofNullable(telecaller.getBusinesses())
                 .orElse(new HashSet<>());
+        assignedBusinesses.add(hospital);
+        telecaller.setBusinesses(assignedBusinesses);
+        userRepository.save(telecaller);
 
-        currentBusinesses.add(hospital);
-        user.setBusinesses(currentBusinesses);
+        // 5. Create and save the new mapping
+        UserBusinessRoleMappingModel newMapping = saveMapping(telecaller, ERole.ROLE_TELECALLER);
+        newMapping.setB2bUnit(hospital); // ensure hospital is linked
+        mappingRepository.save(newMapping);
 
-        UserBusinessRoleMappingModel mapping = saveMapping(user, ERole.ROLE_TELECALLER);
-        return populateResponse(mapping);
+        // 6. Return DTO
+        return populateResponse(newMapping);
     }
+
+
+
+    private UserBusinessRoleMappingModel saveMapping(UserModel user, ERole role, B2BUnitModel hospital) {
+        UserBusinessRoleMappingModel mapping = new UserBusinessRoleMappingModel();
+        mapping.setUser(user);
+        mapping.setB2bUnit(hospital);
+        mapping.setRole(role);
+        return mappingRepository.save(mapping);
+    }
+
 
 
     @Override
     public Page<UserDTO> getAssignableTelecallersForHospital(Long hospitalId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<Long> userIdsPage = mappingRepository.findUserIdsWithRoleMappedToLessThanTwoHospitals(ERole.ROLE_TELECALLER, pageable);
 
-        List<UserDTO> assignable = new ArrayList<>();
-        for (Long userId : userIdsPage.getContent()) {
-            if (!mappingRepository.existsByUserIdAndB2bUnitIdAndRoleAndIsActiveTrue(userId, hospitalId, ERole.ROLE_TELECALLER)) {
-                assignable.add(toUserDTO(getUserOrThrow(userId)));
-            }
-        }
-        return new PageImpl<>(assignable, pageable, userIdsPage.getTotalElements());
+        Page<UserModel> userPage = mappingRepository
+                .findTelecallersAssignableToHospital(ERole.ROLE_TELECALLER, hospitalId, pageable);
+
+        List<UserDTO> assignable = userPage
+                .stream()
+                .map(this::toUserDTO)
+                .toList();
+        return new PageImpl<>(assignable, pageable, userPage.getTotalElements());
     }
+
+
+
 
     @Override
     public Page<UserDTO> getDoctorsByHospital(Long hospitalId, Pageable pageable) {

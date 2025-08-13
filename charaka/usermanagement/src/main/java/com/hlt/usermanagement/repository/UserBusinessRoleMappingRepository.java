@@ -3,6 +3,7 @@ package com.hlt.usermanagement.repository;
 import com.hlt.commonservice.enums.ERole;
 import com.hlt.usermanagement.model.B2BUnitModel;
 import com.hlt.usermanagement.model.UserBusinessRoleMappingModel;
+import com.hlt.usermanagement.model.UserModel;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -40,4 +41,25 @@ public interface UserBusinessRoleMappingRepository extends JpaRepository<UserBus
     boolean existsByB2bUnitIdAndRole(Long businessId, ERole eRole);
 
     Page<UserBusinessRoleMappingModel> findByB2bUnitIdAndRole(Long hospitalId, ERole role, Pageable pageable);
+
+    @Query("""
+    SELECT ubr.user 
+    FROM UserBusinessRoleMappingModel ubr
+    WHERE ubr.role = :role
+      AND ubr.isActive = true
+      AND ubr.user.id NOT IN (
+          SELECT u.user.id
+          FROM UserBusinessRoleMappingModel u
+          WHERE u.b2bUnit.id = :hospitalId
+            AND u.role = :role
+            AND u.isActive = true
+      )
+    GROUP BY ubr.user.id
+    HAVING COUNT(ubr.b2bUnit.id) < 2
+""")
+    Page<UserModel> findTelecallersAssignableToHospital(@Param("role") ERole role,
+                                                        @Param("hospitalId") Long hospitalId,
+                                                        Pageable pageable);
+
+
 }
