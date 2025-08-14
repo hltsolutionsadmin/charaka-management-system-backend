@@ -7,10 +7,7 @@ import com.hlt.usermanagement.dto.MailRequestDTO;
 import com.hlt.usermanagement.dto.UserBusinessRoleMappingDTO;
 import com.hlt.usermanagement.dto.UserDTO;
 import com.hlt.usermanagement.dto.enums.EmailType;
-import com.hlt.usermanagement.model.B2BUnitModel;
-import com.hlt.usermanagement.model.RoleModel;
-import com.hlt.usermanagement.model.UserBusinessRoleMappingModel;
-import com.hlt.usermanagement.model.UserModel;
+import com.hlt.usermanagement.model.*;
 import com.hlt.usermanagement.populator.UserBusinessRoleMappingPopulator;
 import com.hlt.usermanagement.repository.B2BUnitRepository;
 import com.hlt.usermanagement.repository.RoleRepository;
@@ -38,8 +35,6 @@ import static com.hlt.usermanagement.utils.PasswordUtil.generateRandomPassword;
 @RequiredArgsConstructor
 @Slf4j
 public class UserBusinessRoleMappingServiceImpl implements UserBusinessRoleMappingService {
-
-    private static final int MAX_HOSPITALS_PER_TELECALLER = 2;
 
     private static final ERole TELECALLER_ROLE = ERole.ROLE_TELECALLER;
 
@@ -112,11 +107,11 @@ public class UserBusinessRoleMappingServiceImpl implements UserBusinessRoleMappi
     @Override
     @Transactional
     public UserBusinessRoleMappingDTO onboardDoctor(UserBusinessRoleMappingDTO dto) {
-        sendOnboardingEmail(dto.getUserDetails().getEmail(),
-                dto.getUserDetails().getUsername(),
-                dto.getUserDetails().getFullName(),
-                dto.getUserDetails().getPassword(),
-                ERole.ROLE_DOCTOR);
+//        sendOnboardingEmail(dto.getUserDetails().getEmail(),
+//                dto.getUserDetails().getUsername(),
+//                dto.getUserDetails().getFullName(),
+//                dto.getUserDetails().getPassword(),
+//                ERole.ROLE_DOCTOR);
         return onboardGenericRole(dto, ERole.ROLE_DOCTOR);
 
     }
@@ -161,7 +156,6 @@ public class UserBusinessRoleMappingServiceImpl implements UserBusinessRoleMappi
     }
 
 
-
     @Override
     @Transactional
     public UserBusinessRoleMappingDTO assignTelecallerToHospital(Long telecallerMappingId, Long hospitalId) {
@@ -173,24 +167,11 @@ public class UserBusinessRoleMappingServiceImpl implements UserBusinessRoleMappi
         }
 
         // Fetch telecaller mapping
-        UserBusinessRoleMappingModel mapping = mappingRepository.findById(telecallerMappingId)
+        UserBusinessRoleMappingModel mapping = mappingRepository.findByUserId(telecallerMappingId)
                 .orElseThrow(() -> new HltCustomerException(ErrorCode.NOT_FOUND, "Telecaller mapping not found"));
 
         UserModel user = mapping.getUser();
 
-        // Validate telecaller max hospital limit
-        long assignedCount = mappingRepository.countByUserIdAndRoleAndIsActiveTrue(user.getId(), TELECALLER_ROLE);
-        if (assignedCount >= MAX_HOSPITALS_PER_TELECALLER) {
-            throw new HltCustomerException(ErrorCode.INVALID_ROLE_FOR_OPERATION,
-                    "Telecaller already assigned to maximum allowed hospitals (" + MAX_HOSPITALS_PER_TELECALLER + ")");
-        }
-
-        // Check if telecaller already assigned to this hospital
-        if (mappingRepository.existsByUserIdAndB2bUnitIdAndRoleAndIsActiveTrue(user.getId(), hospitalId, TELECALLER_ROLE)) {
-            throw new HltCustomerException(ErrorCode.ALREADY_EXISTS, "Telecaller already assigned to this hospital");
-        }
-
-        // Fetch hospital
         B2BUnitModel hospital = b2bRepository.findById(hospitalId)
                 .orElseThrow(() -> new HltCustomerException(ErrorCode.BUSINESS_NOT_FOUND));
 
@@ -211,8 +192,6 @@ public class UserBusinessRoleMappingServiceImpl implements UserBusinessRoleMappi
     }
 
 
-
-
     private UserBusinessRoleMappingModel saveMapping(UserModel user, ERole role, B2BUnitModel hospital) {
         UserBusinessRoleMappingModel mapping = new UserBusinessRoleMappingModel();
         mapping.setUser(user);
@@ -220,7 +199,6 @@ public class UserBusinessRoleMappingServiceImpl implements UserBusinessRoleMappi
         mapping.setRole(role);
         return mappingRepository.save(mapping);
     }
-
 
 
     @Override
@@ -236,8 +214,6 @@ public class UserBusinessRoleMappingServiceImpl implements UserBusinessRoleMappi
                 .toList();
         return new PageImpl<>(assignable, pageable, userPage.getTotalElements());
     }
-
-
 
 
     @Override
@@ -312,7 +288,15 @@ public class UserBusinessRoleMappingServiceImpl implements UserBusinessRoleMappi
         user.setPassword(generateRandomPassword(8));
         B2BUnitModel business = b2bRepository.findById(businessId)
                 .orElseThrow(() -> new HltCustomerException(ErrorCode.BUSINESS_NOT_FOUND));
-
+        if (dto.getAttributes() != null && !dto.getAttributes().isEmpty()) {
+            dto.getAttributes().forEach((key, value) -> {
+                UserAttributeModel attr = new UserAttributeModel();
+                attr.setAttributeName(key);
+                attr.setAttributeValue(value);
+                attr.setUser(user);
+                user.getAttributes().add(attr);
+            });
+        }
         Set<B2BUnitModel> businesses = new HashSet<>();
         businesses.add(business);
         business.setOwner(user);

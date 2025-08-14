@@ -93,4 +93,8 @@ public class UserModel extends AuditableModel {
 
     @OneToMany(mappedBy = "owner", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<B2BUnitModel> businesses = new HashSet<>();
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<UserAttributeModel> attributes = new HashSet<>();
+
 }
