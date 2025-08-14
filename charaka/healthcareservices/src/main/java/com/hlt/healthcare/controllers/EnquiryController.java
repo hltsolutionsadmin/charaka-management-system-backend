@@ -56,4 +56,14 @@ public class EnquiryController {
         return StandardResponse.page("Fetched enquiries for prospect contact successfully", response);
     }
 
+    @GetMapping("/customer-history/{contactNumber}")
+    public StandardResponse<Page<EnquiryDTO>> getCustomerHistory(
+            @PathVariable String contactNumber,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        Page<EnquiryDTO> history = enquiryService.getCustomerHistoryByContactHash(contactNumber, page, size);
+        return StandardResponse.page("Customer history fetched successfully", history);
+    }
+
 }
