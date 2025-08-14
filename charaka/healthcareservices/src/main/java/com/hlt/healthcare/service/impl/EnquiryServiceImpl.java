@@ -13,8 +13,12 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -70,6 +74,30 @@ public class EnquiryServiceImpl implements EnquiryService {
     public Page<EnquiryDTO> getByProspectContact(String contact, Pageable pageable) {
         return enquiryRepository.findByProspectContact(contact, pageable)
                 .map(this::toDTO);
+    }
+
+
+    @Override
+    public Page<EnquiryDTO> getCustomerHistoryByContactHash(String hash, int page, int size) {
+        List<EnquiryModel> allEnquiries = enquiryRepository.findCustomerHistoryByContactHash(hash);
+
+        if (allEnquiries.isEmpty()) {
+            throw new HltCustomerException(ErrorCode.ENQUIRY_NOT_FOUND,
+                    "No enquiries found for the given contact hash");
+        }
+
+        // Sort newest first (optional)
+        allEnquiries.sort((e1, e2) -> e2.getCreatedAt().compareTo(e1.getCreatedAt()));
+
+        // Pagination calculation
+        int start = Math.min(page * size, allEnquiries.size());
+        int end = Math.min(start + size, allEnquiries.size());
+
+        List<EnquiryDTO> pagedList = allEnquiries.subList(start, end).stream()
+                .map(this::toDTO)
+                .toList();
+
+        return new PageImpl<>(pagedList, PageRequest.of(page, size), allEnquiries.size());
     }
 
     private EnquiryDTO toDTO(EnquiryModel model) {
