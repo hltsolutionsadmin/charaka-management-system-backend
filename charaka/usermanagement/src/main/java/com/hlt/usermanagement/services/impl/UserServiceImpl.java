@@ -275,6 +275,10 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
                         .map(this::convertToB2BDTO)
                         .orElse(null));
 
+        Map<String, String> userAttributes = user.getAttributes()
+                .stream()
+                .collect(Collectors.toMap(UserAttributeModel::getAttributeName, UserAttributeModel::getAttributeValue));
+
         return UserDTO.builder()
                 .id(user.getId())
                 .fullName(StringUtils.trimToNull(user.getFullName()))
@@ -288,6 +292,7 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
                 .roles(roles)
                 .juviId(StringUtils.trimToNull(user.getJuviId()))
                 .b2bUnit(b2bUnit)
+                .attributes(userAttributes)
                 .build();
     }
 

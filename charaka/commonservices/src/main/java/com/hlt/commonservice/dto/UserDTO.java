@@ -9,6 +9,7 @@ import lombok.*;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Getter
@@ -60,6 +61,8 @@ public class UserDTO {
 
     private B2BUnitDTO b2bUnit;
     private List<MediaDTO> media;
+
+    private Map<String, String> attributes;
 
     private String password;
 }

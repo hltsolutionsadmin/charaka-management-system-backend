@@ -2,9 +2,13 @@ package com.hlt.usermanagement.populator;
 
 import com.hlt.usermanagement.dto.UserBusinessRoleMappingDTO;
 import com.hlt.usermanagement.dto.UserDTO;
+import com.hlt.usermanagement.dto.response.BusinessAttributeResponse;
 import com.hlt.usermanagement.model.UserBusinessRoleMappingModel;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
+
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Component
 @AllArgsConstructor
@@ -31,5 +35,4 @@ public class UserBusinessRoleMappingPopulator {
 
         }
     }
-
 }
