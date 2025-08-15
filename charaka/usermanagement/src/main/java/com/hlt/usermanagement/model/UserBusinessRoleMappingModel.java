@@ -5,7 +5,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.Where;
 
-import java.util.Set;
 
 /**
  * Reusable mapping to assign any user to a hospital (B2BUnit) with a specific role.

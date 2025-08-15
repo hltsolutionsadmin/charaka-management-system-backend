@@ -13,11 +13,9 @@ import com.hlt.usermanagement.dto.request.LoginRequest;
 import com.hlt.usermanagement.dto.request.RefreshTokenRequest;
 import com.hlt.usermanagement.dto.request.UsernameLoginRequest;
 import com.hlt.usermanagement.jwt.JwtResponse;
-import com.hlt.usermanagement.model.B2BUnitModel;
-import com.hlt.usermanagement.model.RoleModel;
-import com.hlt.usermanagement.model.UserModel;
-import com.hlt.usermanagement.model.UserOTPModel;
+import com.hlt.usermanagement.model.*;
 import com.hlt.usermanagement.repository.B2BUnitRepository;
+import com.hlt.usermanagement.repository.UserBusinessRoleMappingRepository;
 import com.hlt.usermanagement.services.RoleService;
 import com.hlt.usermanagement.services.UserOTPService;
 import com.hlt.usermanagement.services.UserService;
@@ -55,6 +53,8 @@ public class AuthController extends JTBaseEndpoint {
     private final B2BUnitRepository b2bUnitRepository;
     private final UserDetailsServiceImpl userDetailsService;
     private final PasswordEncoder passwordEncoder;
+
+    private final UserBusinessRoleMappingRepository mappingRepository;
 
     @PostMapping("/login")
     public ResponseEntity<Object> generateJwt(@Valid @RequestBody LoginRequest loginRequest) throws JsonProcessingException {
@@ -246,6 +246,18 @@ public class AuthController extends JTBaseEndpoint {
                     .toList()
                     : Collections.emptyList();
 
+
+            List<Long> mappedBusinessIds = mappingRepository.findByUserId(userModel.getId())
+                    .stream()
+                    .map(mapping -> mapping.getB2bUnit().getId())
+                    .distinct()
+                    .toList();
+
+
+            Set<Long> allBusinessIds = new HashSet<>();
+            allBusinessIds.addAll(businessIds);
+            allBusinessIds.addAll(mappedBusinessIds);
+
             return new JwtResponse(
                     jwt,
                     loggedInUser.getId(),
@@ -253,7 +265,7 @@ public class AuthController extends JTBaseEndpoint {
                     loggedInUser.getEmail(),
                     new ArrayList<>(loggedInUser.getRoles()),
                     refreshToken,
-                    businessIds
+                    new ArrayList<>(allBusinessIds)
             );
         } finally {
             userOTPService.deleteByPrimaryContactAndOtpType(userModel.getPrimaryContact(), SIGN_IN);

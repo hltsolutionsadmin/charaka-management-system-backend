@@ -11,10 +11,8 @@ import com.hlt.commonservice.dto.UserDTO;
 import com.hlt.commonservice.enums.ERole;
 import com.hlt.commonservice.user.UserDetailsImpl;
 import com.hlt.usermanagement.dto.UserUpdateDTO;
-import com.hlt.usermanagement.repository.B2BUnitRepository;
-import com.hlt.usermanagement.repository.MediaRepository;
-import com.hlt.usermanagement.repository.RoleRepository;
-import com.hlt.usermanagement.repository.UserRepository;
+import com.hlt.usermanagement.repository.*;
+import com.hlt.usermanagement.services.UserBusinessRoleMappingService;
 import com.hlt.usermanagement.services.UserService;
 import com.hlt.utils.SecurityUtils;
 import jakarta.transaction.Transactional;
@@ -41,6 +39,9 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
     @Autowired private MediaRepository mediaRepository;
     @Autowired private B2BUnitRepository b2bUnitRepository;
     @Autowired private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private UserBusinessRoleMappingRepository mappingRepository;
     @Override
     public UserModel saveUser(UserModel userModel) {
         try {
@@ -267,13 +268,22 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
         // Get profile picture URL
         String profilePicture = getProfilePictureUrl(user.getId());
 
-        // Resolve first B2B Unit if multiple exist
-        B2BUnitDTO b2bUnit = Optional.ofNullable(user.getBusinesses())
-                .flatMap(businesses -> businesses.stream().findFirst())
-                .map(this::convertToB2BDTO)
-                .orElseGet(() -> b2bUnitRepository.findByOwner(user)
-                        .map(this::convertToB2BDTO)
-                        .orElse(null));
+        List<Long> mappedBusinessIds = mappingRepository.findByUserId(user.getId())
+                .stream()
+                .map(mapping -> mapping.getB2bUnit().getId())
+                .distinct()
+                .toList();
+
+        List<Long> businessIds = user.getBusinesses() != null
+                ? user.getBusinesses().stream()
+                .map(B2BUnitModel::getId)
+                .toList()
+                : Collections.emptyList();
+
+
+        Set<Long> allBusinessIds = new HashSet<>();
+        allBusinessIds.addAll(businessIds);
+        allBusinessIds.addAll(mappedBusinessIds);
 
         Map<String, String> userAttributes = user.getAttributes()
                 .stream()
@@ -291,8 +301,8 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
                 .profilePicture(profilePicture)
                 .roles(roles)
                 .juviId(StringUtils.trimToNull(user.getJuviId()))
-                .b2bUnit(b2bUnit)
                 .attributes(userAttributes)
+                .businessIds(new ArrayList<>(allBusinessIds))
                 .build();
     }
 
