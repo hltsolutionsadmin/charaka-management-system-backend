@@ -2,6 +2,7 @@ package com.hlt.usermanagement.repository;
 
 import com.hlt.usermanagement.model.RoleModel;
 import com.hlt.usermanagement.model.UserModel;
+import jakarta.validation.constraints.NotBlank;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -39,4 +40,8 @@ public interface UserRepository extends JpaRepository<UserModel, Long> {
     Optional<UserModel> findByPrimaryContactHash(String primaryContactHash);
 
     Optional<UserModel> findByEmailHash(String emailHash);
+
+    Optional<UserModel> findByResetToken(@NotBlank String token);
+
+    Optional<UserModel> findByUsernameOrEmail(String username, String email);
 }

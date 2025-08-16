@@ -6,12 +6,11 @@ import com.hlt.commonservice.dto.BasicOnboardUserDTO;
 import com.hlt.commonservice.dto.UserDTO;
 import com.hlt.commonservice.enums.ERole;
 
-import com.hlt.commonservice.enums.UserVerificationStatus;
 import com.hlt.usermanagement.dto.UserUpdateDTO;
+import com.hlt.usermanagement.dto.request.ChangePasswordRequest;
+import com.hlt.usermanagement.dto.request.ForgotPasswordRequest;
 import com.hlt.usermanagement.model.UserModel;
 import jakarta.validation.constraints.NotBlank;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
@@ -55,4 +54,8 @@ public interface UserService {
     long getUserCountByBusinessId(Long businessId);
 
     Optional<UserModel> findByUsername(@NotBlank String username);
+
+    void forgotPassword(ForgotPasswordRequest request);
+
+     void changePassword(ChangePasswordRequest request) ;
 }

@@ -9,9 +9,7 @@ import com.hlt.auth.exception.handling.HltCustomerException;
 import com.hlt.commonservice.dto.LoggedInUser;
 import com.hlt.commonservice.dto.StandardResponse;
 import com.hlt.commonservice.enums.ERole;
-import com.hlt.usermanagement.dto.request.LoginRequest;
-import com.hlt.usermanagement.dto.request.RefreshTokenRequest;
-import com.hlt.usermanagement.dto.request.UsernameLoginRequest;
+import com.hlt.usermanagement.dto.request.*;
 import com.hlt.usermanagement.jwt.JwtResponse;
 import com.hlt.usermanagement.model.*;
 import com.hlt.usermanagement.repository.B2BUnitRepository;
@@ -287,5 +285,17 @@ public class AuthController extends JTBaseEndpoint {
         user.setRoles(roles);
 
         return user;
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<StandardResponse<String>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        userService.forgotPassword(request);
+        return ResponseEntity.ok(StandardResponse.message("Password reset  sent to your email"));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<StandardResponse<String>> resetPassword(@Valid @RequestBody ChangePasswordRequest request) {
+        userService.changePassword(request);
+        return ResponseEntity.ok(StandardResponse.message("Password updated successfully"));
     }
 }

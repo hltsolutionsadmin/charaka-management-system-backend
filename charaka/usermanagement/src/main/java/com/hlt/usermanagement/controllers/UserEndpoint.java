@@ -1,7 +1,6 @@
 package com.hlt.usermanagement.controllers;
 
 import com.hlt.auth.exception.handling.ErrorCode;
-import com.hlt.auth.exception.handling.GetSpotCustomerException;
 import com.hlt.auth.exception.handling.HltCustomerException;
 import com.hlt.commonservice.dto.*;
 import com.hlt.commonservice.enums.ERole;
@@ -338,5 +337,4 @@ public class UserEndpoint extends JTBaseEndpoint {
         long count = userService.getUserCountByBusinessId(businessId);
         return ResponseEntity.ok(StandardResponse.single("User count fetched successfully", count));
     }
-
 }

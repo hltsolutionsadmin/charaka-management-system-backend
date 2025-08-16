@@ -5,4 +5,5 @@ public enum EmailType {
     DOCTOR_ONBOARD,
     RECEPTIONIST_ACCESS,
     TELECALLER_ACCESS,
+    FORGOT_PASSWORD
 }

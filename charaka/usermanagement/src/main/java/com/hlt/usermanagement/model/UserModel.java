@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -96,5 +97,14 @@ public class UserModel extends AuditableModel {
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<UserAttributeModel> attributes = new HashSet<>();
+
+    // Password reset token
+    @Size(max = 255)
+    @Column(name = "RESET_TOKEN")
+    private String resetToken;
+
+    @Column(name = "RESET_TOKEN_EXPIRY")
+    private LocalDateTime resetTokenExpiry;
+
 
 }
