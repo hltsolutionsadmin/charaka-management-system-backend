@@ -1,5 +1,9 @@
 package com.hlt.usermanagement.services.impl;
 
+import com.hlt.usermanagement.dto.MailRequestDTO;
+import com.hlt.usermanagement.dto.enums.EmailType;
+import com.hlt.usermanagement.dto.request.ForgotPasswordRequest;
+import com.hlt.usermanagement.dto.request.ResetPasswordRequest;
 import com.hlt.usermanagement.model.*;
 import com.hlt.auth.UserServiceAdapter;
 import com.hlt.auth.exception.handling.ErrorCode;
@@ -12,6 +16,7 @@ import com.hlt.commonservice.enums.ERole;
 import com.hlt.commonservice.user.UserDetailsImpl;
 import com.hlt.usermanagement.dto.UserUpdateDTO;
 import com.hlt.usermanagement.repository.*;
+import com.hlt.usermanagement.services.EmailService;
 import com.hlt.usermanagement.services.UserBusinessRoleMappingService;
 import com.hlt.usermanagement.services.UserService;
 import com.hlt.utils.SecurityUtils;
@@ -25,6 +30,8 @@ import org.springframework.cache.caffeine.CaffeineCacheManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.security.SecureRandom;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
@@ -39,6 +46,7 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
     @Autowired private MediaRepository mediaRepository;
     @Autowired private B2BUnitRepository b2bUnitRepository;
     @Autowired private PasswordEncoder passwordEncoder;
+    @Autowired private EmailService emailService;
 
     @Autowired
     private UserBusinessRoleMappingRepository mappingRepository;
@@ -317,6 +325,67 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
         dto.setBusinessName(unit.getBusinessName());
         dto.setEnabled(unit.isEnabled());
         return dto;
+    }
+
+    @Override
+    @Transactional
+    public void forgotPassword(ForgotPasswordRequest request) {
+        UserModel user = userRepository.findByUsernameOrEmail(
+                request.getUsernameOrEmail(),
+                request.getUsernameOrEmail()
+        ).orElseThrow(() -> new HltCustomerException(ErrorCode.USER_NOT_FOUND));
+
+        // Generate a secure random password
+        String newPassword = generateRandomPassword();
+
+        // Encode and update password directly
+        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setResetToken(null);
+        user.setResetTokenExpiry(null);
+        userRepository.save(user);
+
+        Map<String, Object> variables = Map.of(
+                "fullName", user.getFullName(),
+                "username", user.getUsername(),
+                "newPassword", newPassword
+        );
+
+        MailRequestDTO mailRequest = MailRequestDTO.builder()
+                .to(user.getEmail())
+                .subject("Your Password Has Been Reset")
+                .type(EmailType.FORGOT_PASSWORD)
+                .variables(variables)
+                .build();
+        // Send confirmation email with new credentials
+        emailService.sendMail(mailRequest);
+    }
+
+
+    private String generateRandomPassword() {
+        int length = 10; // you can adjust length
+        String charSet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%!&*?";
+        SecureRandom random = new SecureRandom();
+        StringBuilder password = new StringBuilder();
+
+        for (int i = 0; i < length; i++) {
+            password.append(charSet.charAt(random.nextInt(charSet.length())));
+        }
+        return password.toString();
+    }
+
+
+    @Override
+    public void resetPassword(ResetPasswordRequest request) {
+        UserModel user = userRepository.findByResetToken(request.getToken())
+                .orElseThrow(() -> new HltCustomerException(ErrorCode.INVALID_TOKEN));
+
+        if (user.getResetTokenExpiry().isBefore(LocalDateTime.now())) {
+            throw new HltCustomerException(ErrorCode.TOKEN_EXPIRED);
+        }
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        user.setResetToken(null);
+        user.setResetTokenExpiry(null);
+        userRepository.save(user);
     }
 
     public Boolean existsByEmail(String email, Long userId) {

@@ -8,6 +8,8 @@ import com.hlt.commonservice.enums.ERole;
 
 import com.hlt.commonservice.enums.UserVerificationStatus;
 import com.hlt.usermanagement.dto.UserUpdateDTO;
+import com.hlt.usermanagement.dto.request.ForgotPasswordRequest;
+import com.hlt.usermanagement.dto.request.ResetPasswordRequest;
 import com.hlt.usermanagement.model.UserModel;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.data.domain.Page;
@@ -55,4 +57,8 @@ public interface UserService {
     long getUserCountByBusinessId(Long businessId);
 
     Optional<UserModel> findByUsername(@NotBlank String username);
+
+    void forgotPassword(ForgotPasswordRequest request);
+
+    void resetPassword(ResetPasswordRequest request);
 }

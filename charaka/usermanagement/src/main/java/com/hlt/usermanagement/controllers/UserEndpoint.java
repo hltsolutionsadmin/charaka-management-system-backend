@@ -9,6 +9,8 @@ import com.hlt.commonservice.user.UserDetailsImpl;
 import com.hlt.usermanagement.azure.service.AwsBlobService;
 import com.hlt.usermanagement.dto.BasicUserDetails;
 import com.hlt.usermanagement.dto.UserUpdateDTO;
+import com.hlt.usermanagement.dto.request.ForgotPasswordRequest;
+import com.hlt.usermanagement.dto.request.ResetPasswordRequest;
 import com.hlt.usermanagement.model.MediaModel;
 import com.hlt.usermanagement.model.UserModel;
 import com.hlt.usermanagement.populator.MediaPopulator;
@@ -337,6 +339,19 @@ public class UserEndpoint extends JTBaseEndpoint {
     public ResponseEntity<StandardResponse<Long>> getUserCountByBusinessId(@PathVariable Long businessId) {
         long count = userService.getUserCountByBusinessId(businessId);
         return ResponseEntity.ok(StandardResponse.single("User count fetched successfully", count));
+    }
+
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<StandardResponse<String>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        userService.forgotPassword(request);
+        return ResponseEntity.ok(StandardResponse.message("Password reset link sent to your email"));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<StandardResponse<String>> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        userService.resetPassword(request);
+        return ResponseEntity.ok(StandardResponse.message("Password updated successfully"));
     }
 
 }

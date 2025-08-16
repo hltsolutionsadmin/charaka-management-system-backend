@@ -53,6 +53,7 @@ public class EmailServiceImpl implements EmailService {
             case DOCTOR_ONBOARD -> templateEngine.process("emails/doctor_onboard", context);
             case RECEPTIONIST_ACCESS -> templateEngine.process("emails/receptionist_access", context);
             case TELECALLER_ACCESS -> templateEngine.process("emails/telecaller_access", context);
+            case FORGOT_PASSWORD -> templateEngine.process("emails/forgot_password", context);
         };
     }
 
