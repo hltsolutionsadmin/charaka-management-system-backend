@@ -13,6 +13,7 @@ import com.hlt.usermanagement.repository.UserRepository;
 import com.hlt.usermanagement.services.UserBusinessRoleMappingService;
 import com.hlt.utils.JuavaryaConstants;
 import com.hlt.utils.SecurityUtils;
+import jakarta.ws.rs.BadRequestException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -32,15 +33,33 @@ public class UserBusinessRoleMappingController {
     private final UserBusinessRoleMappingService userBusinessRoleMappingService;
     @PostMapping("/onboard-hospital-admin")
     @PreAuthorize(JuavaryaConstants.ROLE_SUPER_ADMIN)
-    public ResponseEntity<StandardResponse<UserBusinessRoleMappingDTO>> onboardHospitalAdmin(@RequestBody UserBusinessRoleMappingDTO dto) {
+    public ResponseEntity<StandardResponse<UserBusinessRoleMappingDTO>> onboardHospitalAdmin(
+            @RequestBody UserBusinessRoleMappingDTO dto) {
+        if (dto.getBusinessId() == null ) {
+            return ResponseEntity.badRequest().body(
+                    StandardResponse.error("Business ID is missing")
+            );
+        }
         UserBusinessRoleMappingDTO result = userBusinessRoleMappingService.onboardHospitalAdmin(dto);
-        return ResponseEntity.ok(StandardResponse.single("Hospital Admin onboarded successfully", result));
+        return ResponseEntity.ok(
+                StandardResponse.single("Hospital Admin onboarded successfully", result)
+        );
+    }
+
+    // ✅ Common validation method
+    private void validateBusinessIdForSuperAdmin(UserModel currentUser, Long businessId) {
+        boolean isSuperAdmin = currentUser.getRoleModels().stream()
+                .anyMatch(role -> JuavaryaConstants.ROLE_SUPER_ADMIN.equalsIgnoreCase(String.valueOf(role.getName())));
+        if (isSuperAdmin && businessId == null) {
+            throw new BadRequestException("Business ID is required for Super Admin");
+        }
     }
 
     @PostMapping("/onboard-doctor")
     @PreAuthorize(JuavaryaConstants.ROLE_HOSPITAL_ADMIN + " or " + JuavaryaConstants.ROLE_SUPER_ADMIN)
     public ResponseEntity<StandardResponse<UserBusinessRoleMappingDTO>> onboardDoctor(@RequestBody UserBusinessRoleMappingDTO dto) {
         UserModel currentUser = fetchCurrentUser();
+        validateBusinessIdForSuperAdmin(currentUser, dto.getBusinessId());
         enforceBusinessScope(currentUser, dto);
         UserBusinessRoleMappingDTO result = userBusinessRoleMappingService.onboardDoctor(dto);
         return ResponseEntity.ok(StandardResponse.single("Doctor onboarded successfully", result));
@@ -48,9 +67,9 @@ public class UserBusinessRoleMappingController {
 
     @PostMapping("/onboard-telecaller")
     @PreAuthorize(JuavaryaConstants.ROLE_SUPER_ADMIN)
-    public ResponseEntity<StandardResponse<UserBusinessRoleMappingDTO>> onboardTelecaller(
-            @RequestBody UserBusinessRoleMappingDTO dto) {
+    public ResponseEntity<StandardResponse<UserBusinessRoleMappingDTO>> onboardTelecaller(@RequestBody UserBusinessRoleMappingDTO dto) {
         UserModel currentUser = fetchCurrentUser();
+        validateBusinessIdForSuperAdmin(currentUser, dto.getBusinessId());
         UserBusinessRoleMappingDTO result = userBusinessRoleMappingService.onboardTelecaller(dto);
         return ResponseEntity.ok(StandardResponse.single("Telecaller onboarded successfully", result));
     }
@@ -59,6 +78,8 @@ public class UserBusinessRoleMappingController {
     @PreAuthorize(JuavaryaConstants.ROLE_HOSPITAL_ADMIN + " or " + JuavaryaConstants.ROLE_SUPER_ADMIN)
     public ResponseEntity<StandardResponse<UserBusinessRoleMappingDTO>> onboardReceptionist(@RequestBody UserBusinessRoleMappingDTO dto) {
         UserModel currentUser = fetchCurrentUser();
+        validateBusinessIdForSuperAdmin(currentUser, dto.getBusinessId());
+
         enforceBusinessScope(currentUser, dto);
         UserBusinessRoleMappingDTO result = userBusinessRoleMappingService.onboardReceptionist(dto);
         return ResponseEntity.ok(StandardResponse.single("Receptionist onboarded successfully", result));
@@ -66,22 +87,28 @@ public class UserBusinessRoleMappingController {
 
     @PostMapping("/assign-telecaller")
     @PreAuthorize(JuavaryaConstants.ROLE_HOSPITAL_ADMIN + " or " + JuavaryaConstants.ROLE_SUPER_ADMIN)
-    public ResponseEntity<StandardResponse<UserBusinessRoleMappingDTO>> assignTelecallerToHospital(@RequestParam Long telecallerUserId) {
+    public ResponseEntity<StandardResponse<UserBusinessRoleMappingDTO>> assignTelecallerToHospital(
+            @RequestParam Long telecallerUserId,
+            @RequestParam(required = false) Long hospitalId) {
+
         UserModel currentUser = fetchCurrentUser();
-        Long businessId = getBusinessScope(currentUser);
-        UserBusinessRoleMappingDTO result = userBusinessRoleMappingService.assignTelecallerToHospital(telecallerUserId, businessId);
+        validateBusinessIdForSuperAdmin(currentUser, hospitalId);
+
+        Long resolvedBusinessId = getBusinessScope(currentUser);
+        UserBusinessRoleMappingDTO result = userBusinessRoleMappingService.assignTelecallerToHospital(telecallerUserId, resolvedBusinessId);
         return ResponseEntity.ok(StandardResponse.single("Telecaller assigned successfully", result));
     }
-
-
 
     @GetMapping("/doctors")
     @PreAuthorize(JuavaryaConstants.ROLE_HOSPITAL_ADMIN + " or " + JuavaryaConstants.ROLE_SUPER_ADMIN)
     public ResponseEntity<StandardResponse<Page<UserDTO>>> getDoctorsByHospital(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) Long hospitalId
-    ) {
+            @RequestParam(required = false) Long hospitalId) {
+
+        UserModel currentUser = fetchCurrentUser();
+        validateBusinessIdForSuperAdmin(currentUser, hospitalId);
+
         Long resolvedHospitalId = resolveHospitalId(hospitalId);
         Pageable pageable = PageRequest.of(page, size);
         Page<UserDTO> doctors = userBusinessRoleMappingService.getDoctorsByHospital(resolvedHospitalId, pageable);
@@ -93,8 +120,11 @@ public class UserBusinessRoleMappingController {
     public ResponseEntity<StandardResponse<Page<UserDTO>>> getReceptionistsByHospital(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) Long hospitalId
-    ) {
+            @RequestParam(required = false) Long hospitalId) {
+
+        UserModel currentUser = fetchCurrentUser();
+        validateBusinessIdForSuperAdmin(currentUser, hospitalId);
+
         Long resolvedHospitalId = resolveHospitalId(hospitalId);
         Pageable pageable = PageRequest.of(page, size);
         Page<UserDTO> receptionists = userBusinessRoleMappingService.getReceptionistsByHospital(resolvedHospitalId, pageable);
@@ -106,14 +136,16 @@ public class UserBusinessRoleMappingController {
     public ResponseEntity<StandardResponse<Page<UserDTO>>> getAvailableTelecallersForAssignment(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) Long hospitalId
-    ) {
+            @RequestParam(required = false) Long hospitalId) {
+
+        UserModel currentUser = fetchCurrentUser();
+        validateBusinessIdForSuperAdmin(currentUser, hospitalId);
+
         Long resolvedHospitalId = resolveHospitalId(hospitalId);
         Page<UserDTO> telecallers = userBusinessRoleMappingService
                 .getAssignableTelecallersForHospital(resolvedHospitalId, page, size);
         return ResponseEntity.ok(StandardResponse.page("Available telecallers for assignment", telecallers));
     }
-
 
     private UserModel fetchCurrentUser() {
         UserDetailsImpl userDetails = SecurityUtils.getCurrentUserDetails();
