@@ -46,6 +46,8 @@ public class UserBusinessRoleMappingModel extends AuditableModel {
     @Column(name = "is_active", nullable = false)
     private Boolean isActive;
 
+    private String resetToken;
+
     @PrePersist
     public void prePersist() {
         if (isActive == null) {

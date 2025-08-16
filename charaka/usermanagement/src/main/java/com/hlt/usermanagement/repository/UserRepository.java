@@ -39,4 +39,7 @@ public interface UserRepository extends JpaRepository<UserModel, Long> {
     Optional<UserModel> findByPrimaryContactHash(String primaryContactHash);
 
     Optional<UserModel> findByEmailHash(String emailHash);
+
+    Optional<UserModel> findByResetToken(String resetToken);
+
 }

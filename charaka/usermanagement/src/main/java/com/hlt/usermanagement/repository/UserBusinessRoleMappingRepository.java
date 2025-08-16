@@ -63,4 +63,7 @@ public interface UserBusinessRoleMappingRepository extends JpaRepository<UserBus
 
 
     Optional<UserBusinessRoleMappingModel> findByUserId(Long telecallerMappingId);
+
+    Optional<UserModel> findByResetToken(String token);
+
 }

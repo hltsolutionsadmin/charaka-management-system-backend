@@ -16,6 +16,7 @@ import com.hlt.usermanagement.repository.UserRepository;
 import com.hlt.usermanagement.services.EmailService;
 import com.hlt.usermanagement.services.UserBusinessRoleMappingService;
 import com.hlt.usermanagement.services.UserService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -27,6 +28,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 import static com.hlt.usermanagement.utils.PasswordUtil.generateRandomPassword;
@@ -46,6 +48,7 @@ public class UserBusinessRoleMappingServiceImpl implements UserBusinessRoleMappi
     private final UserBusinessRoleMappingPopulator populator;
     @Autowired
     private EmailService emailService;
+    //private Punycode passwordEncoder;
 
 
     @Override
@@ -102,6 +105,7 @@ public class UserBusinessRoleMappingServiceImpl implements UserBusinessRoleMappi
             default -> throw new IllegalArgumentException("No EmailType mapping for role: " + role);
         };
     }
+
 
 
     @Override
@@ -347,6 +351,71 @@ public class UserBusinessRoleMappingServiceImpl implements UserBusinessRoleMappi
                 .email(user.getEmail())
                 .build();
     }
+
+
+@Override
+public String forgetPassword(String email) {
+    // 1. Find user by email
+    UserModel user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+
+    // 2. Generate unique token
+    String token = UUID.randomUUID().toString();
+    user.setResetToken(token);
+    user.setTokenExpiry(LocalDateTime.now().plusMinutes(15)); // Token expires in 15 min
+    userRepository.save(user);
+
+    // 3. Create reset link (optional if you only want to send token)
+    String resetLink = "https://your-frontend.com/reset-password?token=" + token;
+
+    // 4. Prepare model for Thymeleaf template
+    Map<String, Object> variables = new HashMap<>();
+    variables.put("name", user.getFullName());
+    variables.put("resetLink", resetLink);
+    variables.put("token", token);
+    // ✅ Add this so Thymeleaf can display it
+// ✅ Token directly added to email variables
+
+    // 5. Build MailRequestDTO
+    MailRequestDTO mailRequest = MailRequestDTO.builder()
+            .to(user.getEmail())
+            .subject("Password Reset Request")
+            .type(EmailType.FORGOT_PASSWORD)
+            .variables(variables) // This will have both link & token
+            .build();
+
+    // 6. Send email
+    emailService.sendMail(mailRequest);
+
+    // 7. Return response
+    return "Password reset token sent to: " + email;
+}
+
+    @Override
+    public boolean resetPassword(String token, String newPassword) {
+        // 1. Find user by reset token
+        UserModel user = userRepository.findByResetToken(token)
+                .orElseThrow(() -> new RuntimeException("Invalid or expired token"));
+
+        // 2. Check token expiry
+        if (user.getTokenExpiry() == null || user.getTokenExpiry().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("Token has expired");
+        }
+
+        // 3. Directly set the new password (No encoding for now as per request)
+        user.setPassword(newPassword);
+
+        // 4. Clear token and expiry
+        user.setResetToken(null);
+        user.setTokenExpiry(null);
+
+        // 5. Save user
+        userRepository.save(user);
+
+        // 6. Return true on success
+        return true;
+    }
+
 
 
 }

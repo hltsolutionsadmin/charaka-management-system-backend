@@ -26,6 +26,10 @@ public interface UserBusinessRoleMappingService {
 
     Page<UserDTO> getAssignableTelecallersForHospital(Long hospitalId, int page, int size);
 
-//     String forgetPassword(String email);  //TODO
+    String forgetPassword(String email);  //TODO
+
+
+    boolean resetPassword(String token, String newPassword);
+
 
 }

@@ -5,22 +5,26 @@ import com.hlt.auth.exception.handling.HltCustomerException;
 import com.hlt.commonservice.dto.StandardResponse;
 import com.hlt.commonservice.enums.ERole;
 import com.hlt.commonservice.user.UserDetailsImpl;
+import com.hlt.usermanagement.dto.ResetPasswordRequest;
 import com.hlt.usermanagement.dto.UserBusinessRoleMappingDTO;
 import com.hlt.usermanagement.dto.UserDTO;
 import com.hlt.usermanagement.model.B2BUnitModel;
 import com.hlt.usermanagement.model.UserModel;
 import com.hlt.usermanagement.repository.UserRepository;
 import com.hlt.usermanagement.services.UserBusinessRoleMappingService;
+import com.hlt.usermanagement.services.UserService;
 import com.hlt.utils.JuavaryaConstants;
 import com.hlt.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
 import java.util.Set;
 
 @RestController
@@ -30,6 +34,8 @@ public class UserBusinessRoleMappingController {
 
     private final UserRepository userRepository;
     private final UserBusinessRoleMappingService userBusinessRoleMappingService;
+
+
     @PostMapping("/onboard-hospital-admin")
     @PreAuthorize(JuavaryaConstants.ROLE_SUPER_ADMIN)
     public ResponseEntity<StandardResponse<UserBusinessRoleMappingDTO>> onboardHospitalAdmin(@RequestBody UserBusinessRoleMappingDTO dto) {
@@ -207,5 +213,37 @@ public class UserBusinessRoleMappingController {
 
         return businesses.iterator().next().getId();
     }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<StandardResponse<String>> forgotPassword(@RequestParam String email) {
+        userBusinessRoleMappingService.forgetPassword(email);
+        return ResponseEntity.ok(StandardResponse.single("Password reset email sent successfully.", null));
+    }
+
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> body) {
+        String token = body.get("token");
+        String newPassword = body.get("newPassword");
+
+        if (token == null || token.isEmpty()) {
+            return ResponseEntity.badRequest().body("Token is missing");
+        }
+        if (newPassword == null || newPassword.isEmpty()) {
+            return ResponseEntity.badRequest().body("New password is missing");
+        }
+
+
+        // 👉 Here call your service to validate token & update password
+        boolean resetDone = userBusinessRoleMappingService.resetPassword(token, newPassword);
+
+        if (resetDone) {
+            return ResponseEntity.ok("Password has been reset successfully");
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid or expired token");
+        }
+    }
+
+
 
 }
