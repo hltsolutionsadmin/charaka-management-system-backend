@@ -2,8 +2,8 @@ package com.hlt.usermanagement.services.impl;
 
 import com.hlt.usermanagement.dto.MailRequestDTO;
 import com.hlt.usermanagement.dto.enums.EmailType;
+import com.hlt.usermanagement.dto.request.ChangePasswordRequest;
 import com.hlt.usermanagement.dto.request.ForgotPasswordRequest;
-import com.hlt.usermanagement.dto.request.ResetPasswordRequest;
 import com.hlt.usermanagement.model.*;
 import com.hlt.auth.UserServiceAdapter;
 import com.hlt.auth.exception.handling.ErrorCode;
@@ -17,7 +17,6 @@ import com.hlt.commonservice.user.UserDetailsImpl;
 import com.hlt.usermanagement.dto.UserUpdateDTO;
 import com.hlt.usermanagement.repository.*;
 import com.hlt.usermanagement.services.EmailService;
-import com.hlt.usermanagement.services.UserBusinessRoleMappingService;
 import com.hlt.usermanagement.services.UserService;
 import com.hlt.utils.SecurityUtils;
 import jakarta.transaction.Transactional;
@@ -31,7 +30,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
@@ -344,11 +342,11 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
         user.setResetTokenExpiry(null);
         userRepository.save(user);
 
-        Map<String, Object> variables = Map.of(
-                "fullName", user.getFullName(),
-                "username", user.getUsername(),
-                "newPassword", newPassword
-        );
+
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("name", user.getFullName());
+        variables.put("username", user.getUsername());
+        variables.put("password", newPassword);
 
         MailRequestDTO mailRequest = MailRequestDTO.builder()
                 .to(user.getEmail())
@@ -360,7 +358,9 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
         emailService.sendMail(mailRequest);
     }
 
-
+    /**
+     * Utility method to generate a secure random password
+     */
     private String generateRandomPassword() {
         int length = 10; // you can adjust length
         String charSet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%!&*?";
@@ -373,20 +373,19 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
         return password.toString();
     }
 
-
     @Override
-    public void resetPassword(ResetPasswordRequest request) {
-        UserModel user = userRepository.findByResetToken(request.getToken())
-                .orElseThrow(() -> new HltCustomerException(ErrorCode.INVALID_TOKEN));
+    public void changePassword(ChangePasswordRequest request) {
+        UserModel user = userRepository.findByUsername(request.getUsername())
+                .orElseThrow(() -> new HltCustomerException(ErrorCode.USER_NOT_FOUND));
 
-        if (user.getResetTokenExpiry().isBefore(LocalDateTime.now())) {
-            throw new HltCustomerException(ErrorCode.TOKEN_EXPIRED);
+        if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
+            throw new HltCustomerException(ErrorCode.INVALID_OLD_PASSWORD);
         }
+
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
-        user.setResetToken(null);
-        user.setResetTokenExpiry(null);
         userRepository.save(user);
     }
+
 
     public Boolean existsByEmail(String email, Long userId) {
         return userRepository.existsByEmailAndNotUserId(email, userId);

@@ -9,6 +9,7 @@ public enum ErrorCode {
     // ===========================
     USER_NOT_FOUND(1000, "User Not Found", HttpStatus.NOT_FOUND),
     ENQUIRY_NOT_FOUND(2000, "Enquiry Not Found", HttpStatus.NOT_FOUND),
+    INVALID_OLD_PASSWORD(1101, "The old password you entered is incorrect", HttpStatus.BAD_REQUEST),
     INVALID_TOKEN(1100, "Invalid Token", HttpStatus.BAD_REQUEST),
     TOKEN_EXPIRED(1101, "Token Expired", HttpStatus.UNAUTHORIZED),
     APPOINTMENT_NOT_FOUND(2001, "Appointment Not Found", HttpStatus.NOT_FOUND),
