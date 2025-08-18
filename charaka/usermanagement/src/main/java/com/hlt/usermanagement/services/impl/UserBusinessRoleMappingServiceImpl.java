@@ -2,10 +2,10 @@ package com.hlt.usermanagement.services.impl;
 
 import com.hlt.auth.exception.handling.ErrorCode;
 import com.hlt.auth.exception.handling.HltCustomerException;
+import com.hlt.commonservice.dto.UserDTO;
 import com.hlt.commonservice.enums.ERole;
 import com.hlt.usermanagement.dto.MailRequestDTO;
 import com.hlt.usermanagement.dto.UserBusinessRoleMappingDTO;
-import com.hlt.usermanagement.dto.UserDTO;
 import com.hlt.usermanagement.dto.enums.EmailType;
 import com.hlt.usermanagement.model.*;
 import com.hlt.usermanagement.populator.UserBusinessRoleMappingPopulator;

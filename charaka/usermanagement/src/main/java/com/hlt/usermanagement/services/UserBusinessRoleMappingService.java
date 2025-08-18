@@ -1,7 +1,7 @@
 package com.hlt.usermanagement.services;
 
+import com.hlt.commonservice.dto.UserDTO;
 import com.hlt.usermanagement.dto.UserBusinessRoleMappingDTO;
-import com.hlt.usermanagement.dto.UserDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
