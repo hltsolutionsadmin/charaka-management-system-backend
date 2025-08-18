@@ -263,7 +263,7 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
                 .orElseThrow(() -> new HltCustomerException(ErrorCode.USER_NOT_FOUND));
     }
 
-    public UserDTO convertToUserDto(UserModel user) {
+    public  UserDTO convertToUserDto(UserModel user) {
         // Map roles
         Set<com.hlt.commonservice.dto.Role> roles = Optional.ofNullable(user.getRoleModels())
                 .orElse(Collections.emptySet())

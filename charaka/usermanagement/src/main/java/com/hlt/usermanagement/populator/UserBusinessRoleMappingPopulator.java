@@ -1,20 +1,19 @@
 package com.hlt.usermanagement.populator;
 
+import com.hlt.commonservice.dto.UserDTO;
 import com.hlt.usermanagement.dto.UserBusinessRoleMappingDTO;
-import com.hlt.usermanagement.dto.UserDTO;
-import com.hlt.usermanagement.dto.response.BusinessAttributeResponse;
 import com.hlt.usermanagement.model.UserBusinessRoleMappingModel;
+import com.hlt.usermanagement.services.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Component
 @AllArgsConstructor
 public class UserBusinessRoleMappingPopulator {
 
     private final UserPopulator userPopulator;
+    private final UserService userService;
 
     public void populate(UserBusinessRoleMappingModel source, UserBusinessRoleMappingDTO target) {
         if (source == null || target == null) return;
@@ -29,10 +28,8 @@ public class UserBusinessRoleMappingPopulator {
         target.setActive(Boolean.TRUE.equals(source.getIsActive()));
 
         if (source.getUser() != null) {
-            UserDTO userDTO = new UserDTO();
-            userPopulator.populate(source.getUser(), userDTO);
+            UserDTO userDTO = userService.convertToUserDto(source.getUser());
             target.setUserDetails(userDTO);
-
         }
     }
 }

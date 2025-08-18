@@ -58,4 +58,6 @@ public interface UserService {
     void forgotPassword(ForgotPasswordRequest request);
 
      void changePassword(ChangePasswordRequest request) ;
+
+      UserDTO convertToUserDto(UserModel user);
 }
