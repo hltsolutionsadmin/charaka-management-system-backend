@@ -1,13 +1,9 @@
 package com.hlt.usermanagement.dto;
 
+import com.hlt.commonservice.dto.UserDTO;
 import com.hlt.commonservice.enums.ERole;
-import com.hlt.usermanagement.dto.response.BusinessAttributeResponse;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 @Getter
 @Setter
