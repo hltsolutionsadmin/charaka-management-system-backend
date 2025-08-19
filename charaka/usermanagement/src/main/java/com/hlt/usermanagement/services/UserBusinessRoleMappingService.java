@@ -28,4 +28,6 @@ public interface UserBusinessRoleMappingService {
 
 //     String forgetPassword(String email);  //TODO
 
+    Page<UserDTO> getPartnersByBusinessAndType(Long businessId, String type, int page, int size);
+
 }
