@@ -269,10 +269,11 @@ public class UserBusinessRoleMappingServiceImpl implements UserBusinessRoleMappi
             throw new HltCustomerException(ErrorCode.NOT_FOUND, "Telecaller ID and Hospital ID are required");
         }
 
-        UserBusinessRoleMappingModel mapping = mappingRepository.findByUserId(telecallerMappingId)
-                .orElseThrow(() -> new HltCustomerException(ErrorCode.NOT_FOUND, "Telecaller mapping not found"));
-
-        UserModel user = mapping.getUser();
+        List<UserBusinessRoleMappingModel> mappings = mappingRepository.findByUserId(telecallerMappingId);
+        if (mappings.isEmpty()) {
+            throw new HltCustomerException(ErrorCode.NOT_FOUND, "Telecaller mapping not found");
+        }
+        UserModel user = mappings.get(0).getUser();
         B2BUnitModel hospital = b2bRepository.findById(hospitalId)
                 .orElseThrow(() -> new HltCustomerException(ErrorCode.BUSINESS_NOT_FOUND));
 

@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 
@@ -62,5 +63,7 @@ public interface UserBusinessRoleMappingRepository extends JpaRepository<UserBus
                                                         Pageable pageable);
 
 
-    Optional<UserBusinessRoleMappingModel> findByUserId(Long telecallerMappingId);
+
+    List<UserBusinessRoleMappingModel> findByUserId(Long userId);
+
 }
