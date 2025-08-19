@@ -276,9 +276,12 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
 
         List<Long> mappedBusinessIds = mappingRepository.findByUserId(user.getId())
                 .stream()
-                .map(mapping -> mapping.getB2bUnit().getId())
+                .map(UserBusinessRoleMappingModel::getB2bUnit)
+                .filter(Objects::nonNull)
+                .map(B2BUnitModel::getId)
                 .distinct()
                 .toList();
+
 
         List<Long> businessIds = user.getBusinesses() != null
                 ? user.getBusinesses().stream()
@@ -315,14 +318,6 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
     private String getProfilePictureUrl(Long userId) {
         MediaModel profilePicture = mediaRepository.findByCustomerIdAndMediaType(userId, "PROFILE_PICTURE");
         return profilePicture != null ? profilePicture.getUrl() : null;
-    }
-
-    private B2BUnitDTO convertToB2BDTO(B2BUnitModel unit) {
-        B2BUnitDTO dto = new B2BUnitDTO();
-        dto.setId(unit.getId());
-        dto.setBusinessName(unit.getBusinessName());
-        dto.setEnabled(unit.isEnabled());
-        return dto;
     }
 
     @Override
