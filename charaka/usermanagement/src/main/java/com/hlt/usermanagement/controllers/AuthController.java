@@ -247,10 +247,11 @@ public class AuthController extends JTBaseEndpoint {
 
             List<Long> mappedBusinessIds = mappingRepository.findByUserId(userModel.getId())
                     .stream()
-                    .map(mapping -> mapping.getB2bUnit().getId())
+                    .map(UserBusinessRoleMappingModel::getB2bUnit)
+                    .filter(Objects::nonNull)
+                    .map(B2BUnitModel::getId)
                     .distinct()
                     .toList();
-
 
             Set<Long> allBusinessIds = new HashSet<>();
             allBusinessIds.addAll(businessIds);
