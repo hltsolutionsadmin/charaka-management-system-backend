@@ -311,5 +311,23 @@ public class UserBusinessRoleMappingServiceImpl implements UserBusinessRoleMappi
         return new PageImpl<>(assignable, pageable, userPage.getTotalElements());
     }
 
+    @Override
+    public Page<UserDTO> getPartnersByBusinessAndType(Long businessId, String type, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+
+        ERole role;
+        try {
+            role = ERole.valueOf("ROLE_" + type.toUpperCase());
+            // Example: "doctor" → ROLE_DOCTOR
+        } catch (IllegalArgumentException e) {
+            throw new HltCustomerException(ErrorCode.ROLE_NOT_FOUND, "Invalid role type: " + type);
+        }
+
+        return mappingRepository.findByB2bUnitIdAndRole(businessId, role, pageable)
+                .map(mapping -> toUserDTO(mapping.getUser()));
+    }
+
+
+
 
 }

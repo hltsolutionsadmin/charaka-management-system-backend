@@ -150,4 +150,24 @@ public class UserBusinessRoleMappingController {
         return businessIds.get(0);
     }
 
+    @GetMapping("/partners")
+    @PreAuthorize(JuavaryaConstants.ROLE_HOSPITAL_ADMIN + " or " + JuavaryaConstants.ROLE_SUPER_ADMIN)
+    public ResponseEntity<StandardResponse<Page<UserDTO>>> getPartnersByBusinessAndType(
+            @RequestParam String type,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) Long hospitalId) {
+
+        Long resolvedHospitalId = resolveHospitalId(hospitalId);
+
+        Page<UserDTO> partners = userBusinessRoleMappingService.getPartnersByBusinessAndType(
+                resolvedHospitalId, type, page, size);
+
+        return ResponseEntity.ok(StandardResponse.page("Partners for hospital and type", partners));
+    }
+
+
 }
+
+
+
