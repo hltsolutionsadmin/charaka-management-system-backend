@@ -64,17 +64,47 @@ public class UserBusinessRoleMappingServiceImpl implements UserBusinessRoleMappi
         return populateResponse(mapping);
     }
 
-    @Override
-    @Transactional
-    public UserBusinessRoleMappingDTO onboardDoctor(UserBusinessRoleMappingDTO dto) {
-        return onboardGenericRole(dto, ERole.ROLE_DOCTOR);
-    }
+//    @Override
+//    @Transactional
+//    public UserBusinessRoleMappingDTO onboardDoctor(UserBusinessRoleMappingDTO dto) {
+//        return onboardGenericRole(dto, ERole.ROLE_DOCTOR);
+//    }
+@Override
+@Transactional
+public UserBusinessRoleMappingDTO onboardDoctor(UserBusinessRoleMappingDTO dto) {
 
-    @Override
-    @Transactional
-    public UserBusinessRoleMappingDTO onboardReceptionist(UserBusinessRoleMappingDTO dto) {
-        return onboardGenericRole(dto, ERole.ROLE_RECEPTIONIST);
-    }
+    UserModel user = fetchOrCreateUser(dto);
+
+    assignRolesToUser(user, ERole.ROLE_DOCTOR);
+    userRepository.save(user);
+
+    sendOnboardingEmail(user, ERole.ROLE_DOCTOR);
+
+    UserBusinessRoleMappingModel mapping = saveMapping(user, ERole.ROLE_DOCTOR);
+    return populateResponse(mapping);
+}
+
+
+//    @Override
+//    @Transactional
+//    public UserBusinessRoleMappingDTO onboardReceptionist(UserBusinessRoleMappingDTO dto) {
+//        return onboardGenericRole(dto, ERole.ROLE_RECEPTIONIST);
+//    }
+@Override
+@Transactional
+public UserBusinessRoleMappingDTO onboardReceptionist(UserBusinessRoleMappingDTO dto) {
+
+    UserModel user = fetchOrCreateUser(dto);
+
+    assignRolesToUser(user, ERole.ROLE_RECEPTIONIST);
+    userRepository.save(user);
+
+    sendOnboardingEmail(user, ERole.ROLE_RECEPTIONIST);
+
+    UserBusinessRoleMappingModel mapping = saveMapping(user, ERole.ROLE_RECEPTIONIST);
+    return populateResponse(mapping);
+
+}
 
     @Override
     @Transactional
