@@ -31,7 +31,8 @@ public class UserDTO {
     private LocalDate lastLogOutDate;
     private LocalDate recentActivityDate;
     private List<AddressDTO> addresses;
-    private Long businessId;
+    private Map<Long, String> businessInfo;
+    private List<Long> businessIds;
     private Set<String> roles;
     //JsonIgnore to prevent password from being serialized in API responses
     private String password;
