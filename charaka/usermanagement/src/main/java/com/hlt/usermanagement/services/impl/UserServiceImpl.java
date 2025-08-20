@@ -262,8 +262,7 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
         return userRepository.findById(id)
                 .orElseThrow(() -> new HltCustomerException(ErrorCode.USER_NOT_FOUND));
     }
-
-    public  UserDTO convertToUserDto(UserModel user) {
+    public UserDTO convertToUserDto(UserModel user) {
         // Map roles
         Set<com.hlt.commonservice.dto.Role> roles = Optional.ofNullable(user.getRoleModels())
                 .orElse(Collections.emptySet())
@@ -274,30 +273,48 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
         // Get profile picture URL
         String profilePicture = getProfilePictureUrl(user.getId());
 
-        List<Long> mappedBusinessIds = mappingRepository.findByUserId(user.getId())
+        // First, get the mapped business IDs and their names
+        Map<Long, String> mappedBusinessInfo = mappingRepository.findByUserId(user.getId())
                 .stream()
                 .map(UserBusinessRoleMappingModel::getB2bUnit)
                 .filter(Objects::nonNull)
-                .map(B2BUnitModel::getId)
-                .distinct()
-                .toList();
+                .collect(Collectors.toMap(
+                        B2BUnitModel::getId,
+                        B2BUnitModel::getBusinessName,
+                        (existing, replacement) -> existing
+                ));
 
-
-        List<Long> businessIds = user.getBusinesses() != null
+        // Next, get the user's direct business IDs and their names
+        Map<Long, String> directBusinessInfo = user.getBusinesses() != null
                 ? user.getBusinesses().stream()
-                .map(B2BUnitModel::getId)
-                .toList()
-                : Collections.emptyList();
+                .collect(Collectors.toMap(
+                        B2BUnitModel::getId,
+                        B2BUnitModel::getBusinessName,
+                        (existing, replacement) -> existing
+                ))
+                : Collections.emptyMap();
 
+        // Combine the two maps into a single source of truth for unique business IDs and names
+        Map<Long, String> allBusinessInfo = new HashMap<>();
+        allBusinessInfo.putAll(mappedBusinessInfo);
+        allBusinessInfo.putAll(directBusinessInfo);
 
-        Set<Long> allBusinessIds = new HashSet<>();
-        allBusinessIds.addAll(businessIds);
-        allBusinessIds.addAll(mappedBusinessIds);
+        // Now, transform the Map into the desired List<Map<String, Object>> format
+        List<Map<String, Object>> businesses = allBusinessInfo.entrySet().stream()
+                .map(entry -> {
+                    Map<String, Object> businessMap = new HashMap<>();
+                    businessMap.put("id", entry.getKey());
+                    businessMap.put("businessName", entry.getValue());
+                    return businessMap;
+                })
+                .collect(Collectors.toList());
 
+        // Map user attributes
         Map<String, String> userAttributes = user.getAttributes()
                 .stream()
                 .collect(Collectors.toMap(UserAttributeModel::getAttributeName, UserAttributeModel::getAttributeValue));
 
+        // Build and return the UserDTO
         return UserDTO.builder()
                 .id(user.getId())
                 .fullName(StringUtils.trimToNull(user.getFullName()))
@@ -311,7 +328,7 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
                 .roles(roles)
                 .juviId(StringUtils.trimToNull(user.getJuviId()))
                 .attributes(userAttributes)
-                .businessIds(new ArrayList<>(allBusinessIds))
+                .businesses(businesses) // Pass the new list of maps
                 .build();
     }
 

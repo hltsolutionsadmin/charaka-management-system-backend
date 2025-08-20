@@ -8,6 +8,7 @@ import com.hlt.utils.Populator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -37,9 +38,9 @@ public class UserPopulator implements Populator<UserModel, UserDTO> {
         target.setJuviId(source.getJuviId());
         target.setLastLogOutDate(source.getLastLogOutDate());
         target.setRecentActivityDate(source.getRecentActivityDate());
-        target.setBusinessId(source.getBusinesses() != null && !source.getBusinesses().isEmpty()
+        target.setBusinessIds(Collections.singletonList(source.getBusinesses() != null && !source.getBusinesses().isEmpty()
                 ? source.getBusinesses().iterator().next().getId()
-                : null);
+                : null));
 
         if (includeAddresses && source.getAddresses() != null && !source.getAddresses().isEmpty()) {
             target.setAddresses(

@@ -20,6 +20,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/mappings")
@@ -139,7 +140,7 @@ public class UserBusinessRoleMappingController {
         }
 
         // Hospital Admin case
-        List<Long> businessIds = currentUser.getBusinessIds();
+        Map<Long, String> businessIds = currentUser.getBusinessIdToNameMap();
         if (businessIds == null || businessIds.isEmpty()) {
             throw new HltCustomerException(ErrorCode.BUSINESS_NOT_FOUND, "Has no associated businesses");
         }
@@ -147,7 +148,7 @@ public class UserBusinessRoleMappingController {
             throw new HltCustomerException(ErrorCode.BAD_REQUEST, "Multiple hospitals found. Please specify hospitalId");
         }
 
-        return businessIds.get(0);
+        return Long.valueOf(businessIds.get(0));
     }
 
     @GetMapping("/partners")

@@ -64,7 +64,8 @@ public class UserDTO {
 
     private Map<String, String> attributes;
 
-    private List<Long> businessIds;
+    private Map<Long, String> businessIdToNameMap;
+    private List<Map<String, Object>> businesses;
 
     private String password;
 }
