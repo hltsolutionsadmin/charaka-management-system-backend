@@ -163,6 +163,8 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
 
         return dto;
     }
+
+
     private MediaDTO convertToMediaDto(MediaModel media) {
         MediaDTO dto = new MediaDTO();
         dto.setId(media.getId());
@@ -312,6 +314,7 @@ public class UserServiceImpl implements UserService, UserServiceAdapter {
                 .juviId(StringUtils.trimToNull(user.getJuviId()))
                 .attributes(userAttributes)
                 .businessIds(new ArrayList<>(allBusinessIds))
+
                 .build();
     }
 

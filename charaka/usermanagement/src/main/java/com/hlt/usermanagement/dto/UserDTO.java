@@ -37,5 +37,8 @@ public class UserDTO {
     private String password;
     private Map<String, String> attributes;
 
+    private List<String> businessNames;
+
+
 
 }
