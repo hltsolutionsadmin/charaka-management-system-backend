@@ -129,8 +129,9 @@ public class UserBusinessRoleMappingController {
     private Long resolveHospitalId(Long inputHospitalId) {
         UserDTO currentUser = fetchCurrentUser();  // now returns UserDTO
 
+        // Check if Super Admin
         boolean isSuperAdmin = currentUser.getRoles().stream()
-                .anyMatch(role -> role.getName() == ERole.ROLE_SUPER_ADMIN);
+                .anyMatch(role -> ERole.ROLE_SUPER_ADMIN.equals(role.getName()));
 
         if (isSuperAdmin) {
             if (inputHospitalId == null) {
@@ -140,15 +141,22 @@ public class UserBusinessRoleMappingController {
         }
 
         // Hospital Admin case
-        Map<Long, String> businessIds = currentUser.getBusinessIdToNameMap();
-        if (businessIds == null || businessIds.isEmpty()) {
+        List<Map<String, Object>> businesses = currentUser.getBusinesses();
+        if (businesses == null || businesses.isEmpty()) {
             throw new HltCustomerException(ErrorCode.BUSINESS_NOT_FOUND, "Has no associated businesses");
         }
-        if (businessIds.size() > 1) {
+        if (businesses.size() > 1) {
             throw new HltCustomerException(ErrorCode.BAD_REQUEST, "Multiple hospitals found. Please specify hospitalId");
         }
 
-        return Long.valueOf(businessIds.get(0));
+        // Get the only hospital ID from the first map
+        Map<String, Object> business = businesses.get(0);
+        Object idObj = business.get("id");
+        if (idObj == null) {
+            throw new HltCustomerException(ErrorCode.BUSINESS_NOT_FOUND, "Hospital ID not found");
+        }
+
+        return Long.valueOf(idObj.toString());
     }
 
     @GetMapping("/partners")
