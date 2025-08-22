@@ -5,8 +5,6 @@ import com.hlt.usermanagement.dto.UserBusinessRoleMappingDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.util.List;
-
 public interface UserBusinessRoleMappingService {
 
 
@@ -25,8 +23,6 @@ public interface UserBusinessRoleMappingService {
     Page<UserDTO> getReceptionistsByHospital(Long hospitalId, Pageable pageable);
 
     Page<UserDTO> getAssignableTelecallersForHospital(Long hospitalId, int page, int size);
-
-//     String forgetPassword(String email);  //TODO
 
     Page<UserDTO> getPartnersByBusinessAndType(Long businessId, String type, int page, int size);
 
