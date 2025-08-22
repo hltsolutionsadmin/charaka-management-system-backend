@@ -1,5 +1,7 @@
+
+
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8" />
     <title>Welcome to Charaka - Doctor Access</title>
@@ -53,14 +55,14 @@
 <div class="container">
     <div class="title">Welcome to Charaka – Doctor Access</div>
     <div class="content">
-        Dear <span class="highlight">{{name}}</span>,<br /><br />
+        Dear <span class="highlight" th:text="${name}">Doctor</span>,<br /><br />
         We are delighted to welcome you to the <strong>Charaka Healthcare Platform</strong> as a Doctor.<br />
         Your account has been created successfully, and you can now start managing appointments and patients.
 
         <div class="credentials">
             <strong>Your Login Credentials:</strong><br />
-            <span class="highlight">Username:</span> {{username}}<br />
-            <span class="highlight">Password:</span> {{password}}
+            <span class="highlight">Username:</span> <span th:text="${username}">doctor@charaka.com</span><br />
+            <span class="highlight">Password:</span> <span th:text="${password}">ABC12345</span>
         </div>
 
         <br />

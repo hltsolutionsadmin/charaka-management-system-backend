@@ -1,5 +1,6 @@
+
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8" />
     <title>Welcome to Charaka - Telecaller Access</title>
@@ -53,14 +54,14 @@
 <div class="container">
     <div class="title">Welcome to Charaka – Telecaller Access</div>
     <div class="content">
-        Dear <span class="highlight">{{name}}</span>,<br /><br />
+        Dear <span class="highlight" th:text="${name}">Telecaller</span>,<br /><br />
         We are pleased to inform you that you have been successfully onboarded as a
         <strong>Telecaller</strong> on the Charaka Healthcare Platform.
 
         <div class="credentials">
             <strong>Your Login Credentials:</strong><br />
-            <span class="highlight">Username:</span> {{username}}<br />
-            <span class="highlight">Password:</span> {{password}}
+            <span class="highlight">Username:</span> <span th:text="${username}">telecaller@charaka.com</span><br />
+            <span class="highlight">Password:</span> <span th:text="${password}">ABC12345</span>
         </div>
 
         <br />
