@@ -9,7 +9,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@FeignClient(name = "usermanagement")
+@FeignClient(
+        name = "usermanagement",
+        url = "${juvarya.usermgmt.url}"
+)
 public interface UserMgmtClient {
 
     @GetMapping("api/usermanagement/by-contact/{contact}")
