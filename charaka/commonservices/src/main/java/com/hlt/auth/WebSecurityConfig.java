@@ -52,6 +52,8 @@ public class WebSecurityConfig {
                         .requestMatchers(
                                 "/api/usermanagement/auth/**",
                                 "/auth/**",
+                                "/api/healthcareservice/hello",
+                                "/api/healthcareservice/hello/**",
                                 "/jtprofile/admin/**"
 
                         ).permitAll()
