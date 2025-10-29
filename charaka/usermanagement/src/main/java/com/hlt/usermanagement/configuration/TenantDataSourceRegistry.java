@@ -27,7 +27,7 @@ public class TenantDataSourceRegistry {
         return DataSourceBuilder.create()
                 .url(url)
                 .username("root")
-                .password("root")
+                .password("Kusuma@2003")
                 .driverClassName("com.mysql.cj.jdbc.Driver")
                 .build();
     }
