@@ -14,6 +14,7 @@ public enum ErrorCode {
     TOKEN_EXPIRED(1101, "Token Expired", HttpStatus.UNAUTHORIZED),
     APPOINTMENT_NOT_FOUND(2001, "Appointment Not Found", HttpStatus.NOT_FOUND),
     PATIENT_NOT_FOUND(2001, "Patient not found", HttpStatus.NOT_FOUND),
+    CATEGORY_ALREADY_EXISTS(2001, "Category already exists", HttpStatus.CONFLICT),
 
     // Appointment related errors
     USER_ALREADY_EXISTS(1001, "User Already Exists", HttpStatus.CONFLICT),
@@ -58,7 +59,32 @@ public enum ErrorCode {
     // ===========================
     CATEGORY_NOT_FOUND(3001, "Category not found", HttpStatus.NOT_FOUND),
     ALREADY_EXISTS(3003, "Resource already exists", HttpStatus.CONFLICT),
-    ROLE_NOT_FOUND(3004, "Role not found", HttpStatus.CONFLICT);
+    ROLE_NOT_FOUND(3004, "Role not found", HttpStatus.CONFLICT),
+
+    // Product specific
+    PRODUCT_NOT_FOUND(3005, "Product not found", HttpStatus.NOT_FOUND),
+    PRODUCT_ALREADY_EXISTS(3006, "Product already exists", HttpStatus.CONFLICT),
+    INVALID_ATTRIBUTE(3014, "Invalid attribute", HttpStatus.BAD_REQUEST),
+    INVALID_INPUT(3015, "Invalid input", HttpStatus.BAD_REQUEST),
+    INVALID_FILE(3021, "Invalid file", HttpStatus.BAD_REQUEST),
+    BUSINESS_TIMING_NOT_FOUND(3016, "Business timing not found", HttpStatus.NOT_FOUND),
+
+    // Business access/approval
+    UNAUTHORIZED_BUSINESS_ACCESS(3018, "Unauthorized business access", HttpStatus.UNAUTHORIZED),
+    BUSINESS_NOT_APPROVED(3019, "Business not approved", HttpStatus.FORBIDDEN),
+    RESTAURANT_NOT_APPROVED(3020, "Restaurant not approved", HttpStatus.FORBIDDEN),
+    BUSINESS_ID_REQUIRED(3009, "Business ID is required", HttpStatus.BAD_REQUEST),
+
+    // Offer specific
+    OFFER_NOT_FOUND(3007, "Offer not found", HttpStatus.NOT_FOUND),
+    COUPON_CODE_ALREADY_EXISTS(3008, "Coupon code already exists", HttpStatus.CONFLICT),
+    OFFER_NAME_REQUIRED(3010, "Offer name is required", HttpStatus.BAD_REQUEST),
+    OFFER_TYPE_REQUIRED(3011, "Offer type is required", HttpStatus.BAD_REQUEST),
+    OFFER_VALUE_INVALID(3012, "Offer value is invalid", HttpStatus.BAD_REQUEST),
+    INVALID_DATE_RANGE(3013, "Invalid date range", HttpStatus.BAD_REQUEST),
+
+    // Review specific
+    UNAUTHORIZED_REVIEW(3017, "User is not authorized to submit review", HttpStatus.FORBIDDEN);
 
     // ===========================
     // Fields

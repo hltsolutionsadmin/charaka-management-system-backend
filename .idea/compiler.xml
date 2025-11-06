@@ -9,6 +9,7 @@
         <outputRelativeToContentRoot value="true" />
         <module name="apigateway" />
         <module name="registry" />
+        <module name="productmanagement" />
         <module name="usermanagement" />
         <module name="commonservices" />
         <module name="healthcareservices" />
