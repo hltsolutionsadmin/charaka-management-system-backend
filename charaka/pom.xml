@@ -13,6 +13,7 @@
         <module>commonservices</module>
         <module>usermanagement</module>
         <module>healthcareservices</module>
+        <module>productmanagement</module>
 
     </modules>
     <packaging>pom</packaging>
@@ -147,4 +148,5 @@
         </dependencies>
     </dependencyManagement>
 </project>
+
 
