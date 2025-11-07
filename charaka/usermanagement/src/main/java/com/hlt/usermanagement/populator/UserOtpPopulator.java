@@ -5,7 +5,6 @@ import com.hlt.usermanagement.model.UserOTPModel;
 import com.hlt.utils.Populator;
 import org.springframework.stereotype.Component;
 
-
 @Component
 public class UserOtpPopulator implements Populator<UserOTPModel, UserOTPDTO> {
 
