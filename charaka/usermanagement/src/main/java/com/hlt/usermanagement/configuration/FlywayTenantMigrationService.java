@@ -31,6 +31,8 @@ public class FlywayTenantMigrationService {
                     .baselineOnMigrate(true)
                     .load();
 
+            // Repair any failed migrations before proceeding to migrate, so the app can start cleanly
+            flyway.repair();
             flyway.migrate();
            
         });
