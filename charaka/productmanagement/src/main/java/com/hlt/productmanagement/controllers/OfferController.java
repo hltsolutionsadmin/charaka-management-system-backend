@@ -22,7 +22,7 @@ public class OfferController {
     private final UserBusinessAccessHelper userBusinessAccessHelper;
 
     @PostMapping("/save")
-    @PreAuthorize("hasAnyRole('ROLE_USER_ADMIN', 'ROLE_RESTAURANT_OWNER')")
+    @PreAuthorize("hasAnyRole('ROLE_USER_ADMIN')")
     public ResponseEntity<StandardResponse<OfferDTO>> saveOrUpdate(@Valid @RequestBody OfferDTO dto) {
         UserDetailsImpl loggedInUser = SecurityUtils.getCurrentUserDetails();
 
