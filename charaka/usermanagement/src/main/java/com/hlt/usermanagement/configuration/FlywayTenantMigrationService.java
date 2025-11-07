@@ -2,32 +2,38 @@ package com.hlt.usermanagement.configuration;
 
 import jakarta.annotation.PostConstruct;
 import org.flywaydb.core.Flyway;
-import org.springframework.boot.autoconfigure.flyway.FlywayProperties;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
 import java.util.Map;
+import java.util.Optional;
 
 @Component
 public class FlywayTenantMigrationService {
 
     private final TenantDataSourceRegistry tenantRegistry;
-    private final FlywayProperties flywayProperties;
+    private final Environment environment;
 
     public FlywayTenantMigrationService(TenantDataSourceRegistry tenantRegistry,
-                                        FlywayProperties flywayProperties) {
+                                        Environment environment) {
         this.tenantRegistry = tenantRegistry;
-        this.flywayProperties = flywayProperties;
+        this.environment = environment;
     }
 
     @PostConstruct
     public void migrateAllTenants() {
         Map<String, DataSource> tenants = tenantRegistry.getTenantDataSources();
+        // Resolve migration locations; fallback to default if property missing
+        String property = environment.getProperty("spring.flyway.locations");
+        String[] locations = Optional.ofNullable(property)
+                .map(p -> p.split(","))
+                .orElse(new String[]{"classpath:db/migration"});
 
         tenants.forEach((tenantId, dataSource) -> {
             Flyway flyway = Flyway.configure()
                     .dataSource(dataSource)
-                    .locations(flywayProperties.getLocations().toArray(new String[0]))
+                    .locations(locations)
                     .baselineOnMigrate(true)
                     .load();
 
