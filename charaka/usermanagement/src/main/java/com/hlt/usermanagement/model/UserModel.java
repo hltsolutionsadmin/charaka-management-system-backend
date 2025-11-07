@@ -41,10 +41,10 @@ public class UserModel extends AuditableModel {
     @Email
     @Size(max = 50)
     @Convert(converter = EncryptedStringConverter.class)
-    @Column(name = "EMAIL", nullable = false, length = 50)
+    @Column(name = "EMAIL", nullable = true, length = 50)
     private String email;
 
-    @Column(name = "EMAIL_HASH", nullable = false, unique = true)
+    @Column(name = "EMAIL_HASH", nullable = true, unique = true)
     private String emailHash;
 
     @NotBlank
@@ -52,7 +52,7 @@ public class UserModel extends AuditableModel {
     @Column(name = "PRIMARY_CONTACT", nullable = false)
     private String primaryContact;
 
-    @Column(name = "PRIMARY_CONTACT_HASH", nullable = false, unique = true)
+    @Column(name = "PRIMARY_CONTACT_HASH", nullable = true, unique = true)
     private String primaryContactHash;
 
     @Convert(converter = EncryptedStringConverter.class)
