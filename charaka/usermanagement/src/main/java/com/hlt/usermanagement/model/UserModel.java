@@ -31,11 +31,11 @@ public class UserModel extends AuditableModel {
     private Long id;
 
     @Convert(converter = EncryptedStringConverter.class)
-    @Column(name = "FULL_NAME", nullable = false, length = 150)
+    @Column(name = "FULL_NAME", nullable = true, length = 150)
     private String fullName;
 
     @Size(max = 20)
-    @Column(name = "USERNAME", nullable = false, unique = true, length = 20)
+    @Column(name = "USERNAME", nullable = true, unique = true, length = 20)
     private String username;
 
     @Email
@@ -49,7 +49,7 @@ public class UserModel extends AuditableModel {
 
     @NotBlank
     @Convert(converter = EncryptedStringConverter.class)
-    @Column(name = "PRIMARY_CONTACT", nullable = false)
+    @Column(name = "PRIMARY_CONTACT", nullable = true)
     private String primaryContact;
 
     @Column(name = "PRIMARY_CONTACT_HASH", nullable = true, unique = true)
@@ -82,7 +82,7 @@ public class UserModel extends AuditableModel {
 
     @Size(max = 255)
     @Convert(converter = EncryptedStringConverter.class)
-    @Column(name = "PASSWORD", nullable = false)
+    @Column(name = "PASSWORD", nullable = true)
     private String password;
 
     @Column(name = "LAST_LOGOUT_DATE")
